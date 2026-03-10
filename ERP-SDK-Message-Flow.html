@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ERP SDK – Message Flow Diagram</title>
+  <style>
+    :root {
+      --erp:   #2563eb;
+      --sdk:   #7c3aed;
+      --tlx:   #059669;
+      --net:   #d97706;
+      --bg:    #f8fafc;
+      --card:  #ffffff;
+      --border:#e2e8f0;
+      --text:  #1e293b;
+      --muted: #64748b;
+      --arrow: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 32px 24px 64px;
+    }
+
+    /* ── Header ───────────────────────────────────────── */
+    .page-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .page-header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .page-header p {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    /* ── Legend ───────────────────────────────────────── */
+    .legend {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .legend-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+    }
+
+    /* ── Tab bar ──────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 0;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0;
+      max-width: 900px;
+      margin: 0 auto 0;
+    }
+    .tab {
+      padding: 10px 22px;
+      border-radius: 8px 8px 0 0;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      bottom: -2px;
+      border: 2px solid transparent;
+      border-bottom: none;
+    }
+    .tab:hover { color: var(--text); background: var(--border); }
+    .tab.active {
+      color: var(--text);
+      background: var(--card);
+      border-color: var(--border);
+      border-bottom-color: var(--card);
+    }
+    .tab-panels {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Section card ─────────────────────────────────── */
+    .section-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      padding: 32px;
+    }
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .section-desc {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    /* ── Flow ─────────────────────────────────────────── */
+    .flow { display: flex; flex-direction: column; gap: 0; }
+
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      position: relative;
+    }
+    /* vertical line */
+    .flow-step:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 22px;
+      top: 46px;
+      width: 2px;
+      bottom: -8px;
+      background: var(--border);
+      z-index: 0;
+    }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #fff;
+      z-index: 1;
+      margin-top: 2px;
+    }
+
+    .step-body {
+      flex: 1;
+      padding: 14px 18px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      margin-bottom: 16px;
+      background: var(--bg);
+      transition: box-shadow 0.2s;
+    }
+    .step-body:hover { box-shadow: 0 4px 12px rgba(0,0,0,.07); }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+    }
+    .step-actor {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      padding: 2px 8px;
+      border-radius: 99px;
+      color: #fff;
+    }
+    .step-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .step-detail {
+      font-size: 0.83rem;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-top: 4px;
+    }
+    .step-detail code {
+      background: #f1f5f9;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      color: #475569;
+      font-family: 'Consolas', monospace;
+    }
+
+    /* ── Split flows side by side ─────────────────────── */
+    .split-flow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 640px) {
+      .split-flow { grid-template-columns: 1fr; }
+      .tabs { flex-wrap: wrap; }
+    }
+    .split-section-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      color: #fff;
+    }
+
+    /* ── Endpoint box ─────────────────────────────────── */
+    .endpoint-box {
+      margin-top: 28px;
+      border: 1.5px solid #d1fae5;
+      border-radius: 10px;
+      padding: 18px 22px;
+      background: #f0fdf4;
+    }
+    .endpoint-box h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--tlx);
+      margin-bottom: 12px;
+    }
+    .endpoint-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .method-badge {
+      flex-shrink: 0;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 5px;
+      color: #fff;
+      font-family: monospace;
+      margin-top: 1px;
+    }
+    .method-post { background: #2563eb; }
+    .method-get  { background: #059669; }
+    .endpoint-info p { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
+    .endpoint-info code {
+      font-size: 0.83rem;
+      font-family: 'Consolas', monospace;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* ── RFC badge ────────────────────────────────────── */
+    .rfc-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: #ede9fe;
+      color: #5b21b6;
+      margin-left: 6px;
+      font-family: monospace;
+    }
+
+    /* ── SDK capabilities table ───────────────────────── */
+    .cap-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+    .cap-card {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      background: var(--bg);
+    }
+    .cap-card .cap-num {
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .cap-card .cap-title {
+      font-size: 0.83rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .cap-card .cap-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* actor colour helpers */
+    .c-erp  { background-color: var(--erp); }
+    .c-sdk  { background-color: var(--sdk); }
+    .c-tlx  { background-color: var(--tlx); }
+    .c-net  { background-color: var(--net); }
+    .border-erp { border-color: #bfdbfe !important; }
+    .border-sdk { border-color: #ddd6fe !important; }
+    .border-tlx { border-color: #a7f3d0 !important; }
+    .border-net { border-color: #fde68a !important; }
+    .bg-erp { background-color: #eff6ff !important; }
+    .bg-sdk { background-color: #f5f3ff !important; }
+    .bg-tlx { background-color: #f0fdf4 !important; }
+    .bg-net { background-color: #fffbeb !important; }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>🔐 ERP SDK — Message Flow Diagram</h1>
+  <p>ระบบแลกเปลี่ยนข้อมูลอิเล็กทรอนิกส์ผ่าน TLX &nbsp;|&nbsp; ออกแบบตามมาตรฐาน สพธอ. &amp; RFC 7516/7517</p>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot c-erp"></div> ERP / Application</div>
+  <div class="legend-item"><div class="legend-dot c-sdk"></div> ERP SDK (Library)</div>
+  <div class="legend-item"><div class="legend-dot c-tlx"></div> TLX Platform</div>
+  <div class="legend-item"><div class="legend-dot c-net"></div> Network / Internet</div>
+</div>
+
+<!-- ─── TABS ─────────────────────────────────────────────── -->
+<div class="tabs" id="tabs">
+  <button class="tab active" data-panel="overview">📋 SDK Capabilities</button>
+  <button class="tab" data-panel="setup">🔑 Key Setup Flow</button>
+  <button class="tab" data-panel="send">📤 Send Message Flow</button>
+  <button class="tab" data-panel="receive">📥 Receive Message Flow</button>
+  <button class="tab" data-panel="endpoint">🌐 TLX Endpoints</button>
+</div>
+
+<div class="tab-panels">
+
+  <!-- ═══ PANEL 1: Overview ══════════════════════════════════ -->
+  <div class="tab-panel active section-card" id="panel-overview">
+    <div class="section-title">SDK Capabilities — ความสามารถหลักของ ERP SDK</div>
+    <div class="section-desc">
+      SDK ที่ติดตั้งฝั่ง ERP ต้องรองรับฟังก์ชันทั้ง 7 ข้อต่อไปนี้ เพื่อให้สามารถแลกเปลี่ยนข้อมูลได้อย่างปลอดภัยและเป็นมาตรฐาน
+    </div>
+    <div class="cap-grid">
+      <div class="cap-card border-sdk bg-sdk">
+        <div class="cap-num" style="color:var(--sdk)">01</div>
+        <div class="cap-title">Generate Message</div>
+        <div class="cap-desc">สร้าง JSON message ตามรูปแบบมาตรฐานที่ สพธอ. กำหนด</div>
+      </div>
+      <div class="cap-card border-sdk bg-sdk">
+        <div class="cap-num" style="color:var(--sdk)">02</div>
+        <div class="cap-title">Validate Message</div>
+        <div class="cap-desc">ตรวจสอบโครงสร้างและความถูกต้องของ message ก่อนส่ง/หลังรับ</div>
+      </div>
+      <div class="cap-card border-erp bg-erp">
+        <div class="cap-num" style="color:var(--erp)">03</div>
+        <div class="cap-title">Generate Key Pair</div>
+        <div class="cap-desc">สร้างคู่กุญแจ Public/Private key สำหรับ ERP แต่ละ Participant</div>
+      </div>
+      <div class="cap-card border-tlx bg-tlx">
+        <div class="cap-num" style="color:var(--tlx)">04</div>
+        <div class="cap-title">Upload Public Key</div>
+        <div class="cap-desc">ส่ง Public key ไปเก็บที่ TLX ผ่าน POST endpoint <code>/keys/me</code></div>
+      </div>
+      <div class="cap-card border-tlx bg-tlx">
+        <div class="cap-num" style="color:var(--tlx)">05</div>
+        <div class="cap-title">Fetch Partner Key</div>
+        <div class="cap-desc">ดึง Public key ของคู่ค้าจาก TLX ในรูปแบบ JWK <span class="rfc-badge">RFC 7517</span></div>
+      </div>
+      <div class="cap-card border-sdk bg-sdk">
+        <div class="cap-num" style="color:var(--sdk)">06</div>
+        <div class="cap-title">Encrypt (JWE)</div>
+        <div class="cap-desc">เข้ารหัส JSON message ด้วย Public key ของผู้รับ <span class="rfc-badge">RFC 7516</span></div>
+      </div>
+      <div class="cap-card border-sdk bg-sdk">
+        <div class="cap-num" style="color:var(--sdk)">07</div>
+        <div class="cap-title">Decrypt (JWE)</div>
+        <div class="cap-desc">ถอดรหัส JWE ที่ได้รับด้วย Private key ของตัวเอง <span class="rfc-badge">RFC 7516</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PANEL 2: Key Setup ══════════════════════════════════ -->
+  <div class="tab-panel section-card" id="panel-setup">
+    <div class="section-title">🔑 Key Setup Flow — การตั้งค่ากุญแจเข้ารหัส (ทำครั้งเดียว)</div>
+    <div class="section-desc">
+      ก่อนที่ ERP จะสามารถส่ง/รับข้อมูลแบบเข้ารหัสได้ ต้องผ่านขั้นตอนการตั้งค่ากุญแจก่อน
+    </div>
+    <div class="flow">
+
+      <div class="flow-step">
+        <div class="step-num c-erp">1</div>
+        <div class="step-body border-erp bg-erp">
+          <div class="step-header">
+            <span class="step-actor c-erp">ERP</span>
+            <span class="step-name">เริ่มต้นสมัครใช้งานระบบ</span>
+          </div>
+          <div class="step-detail">ERP Participant ลงทะเบียนและได้รับ <code>participant_id</code> จาก TLX</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num c-sdk">2</div>
+        <div class="step-body border-sdk bg-sdk">
+          <div class="step-header">
+            <span class="step-actor c-sdk">SDK</span>
+            <span class="step-name">Generate RSA / EC Key Pair</span>
+          </div>
+          <div class="step-detail">
+            SDK สร้างคู่กุญแจ <code>privateKey</code> + <code>publicKey</code> สำหรับ Participant นี้โดยเฉพาะ<br/>
+            • Algorithm แนะนำ: <code>RSA-OAEP-256</code> หรือ <code>ECDH-ES</code><br/>
+            • Private key เก็บไว้ใน ERP ภายใน (ไม่ส่งออกไปไหน)
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num c-sdk">3</div>
+        <div class="step-body border-sdk bg-sdk">
+          <div class="step-header">
+            <span class="step-actor c-sdk">SDK</span>
+            <span class="step-name">Export Public Key เป็นรูปแบบ JWK</span>
+          </div>
+          <div class="step-detail">
+            แปลง Public key เป็น JSON Web Key (JWK) ตาม <span class="rfc-badge">RFC 7517</span><br/>
+            ตัวอย่าง: <code>{ "kty":"RSA", "use":"enc", "alg":"RSA-OAEP-256", "n":"...", "e":"AQAB" }</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num c-tlx">4</div>
+        <div class="step-body border-tlx bg-tlx">
+          <div class="step-header">
+            <span class="step-actor c-tlx">TLX</span>
+            <span class="step-name">Upload Public Key → POST /keys/me</span>
+          </div>
+          <div class="step-detail">
+            SDK ส่ง JWK ไปที่ TLX endpoint: <code>POST /api/v1/keys/me</code><br/>
+            TLX บันทึก Public key เชื่อมกับ <code>participant_id</code> ของ ERP นั้น
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num c-tlx">5</div>
+        <div class="step-body border-tlx bg-tlx">
+          <div class="step-header">
+            <span class="step-actor c-tlx">TLX</span>
+            <span class="step-name">TLX ยืนยันและเก็บ Public Key</span>
+          </div>
+          <div class="step-detail">
+            TLX ตอบกลับ <code>200 OK</code> พร้อม <code>key_id</code> สำหรับอ้างอิงในอนาคต<br/>
+            ✅ ERP Participant พร้อมส่ง/รับข้อมูลเข้ารหัสแล้ว
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ PANEL 3: Send Message ══════════════════════════════ -->
+  <div class="tab-panel section-card" id="panel-send">
+    <div class="section-title">📤 Send Message Flow — การส่งข้อมูล (Sender Side)</div>
+    <div class="section-desc">
+      Flow นี้ทำงานทุกครั้งที่ ERP ต้องการส่งข้อมูลไปยังคู่ค้า โดยข้อมูลจะถูกเข้ารหัสด้วย Public key ของผู้รับ
+    </div>
+    <div class="flow">
+
+      <div class="flow-step">
+        <div class="step-num c-erp">1</div>
+        <div class="step-body border-erp bg-erp">
+          <div class="step-header">
+            <span class="step-actor c-erp">ERP</span>
+            <span class="step-name">สร้างข้อมูลธุรกิจ (Business Data)</span>
+          </div>
+          <div class="step-detail">ERP เตรียมข้อมูล เช่น Invoice, PO, GR ที่ต้องการส่งให้คู่ค้า</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num c-sdk">2</div>
+        <div class="step-body border-sdk bg-sdk">
+          <div class="step-header">
+            <span class="step-actor c-sdk">SDK</span>
+            <span class="step-name">Generate JSON Message (สพธอ. Standard)</span>
+          </div>
+          <div class="step-detail">
+            SDK แปลงข้อมูลเป็น JSON ตามโครงสร้างมาตรฐาน สพธอ.<br/>
+            ระบุ Header: <code>sender_id</code>, <code>receiver_id</code>, <code>message_type</code>, <code>timestamp</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num c-sdk">3</div>
+        <div class="step-body border-sdk bg-sdk">
+          <div class="step-header">
+            <span class="step-actor c-sdk">SDK</span>
+            <span class="step-name">Validate Message Structure</span>
+          </div>
+          <div class="step-detail">
+            ตรวจสอบว่า JSON ถูกต้องตาม Schema ที่กำหนด<br/>
+            • ตรวจ required fields, data types, format<br/>
+            • หาก Validate ไม่ผ่าน → ส่ง error กลับ ERP และหยุดการทำงาน
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num c-tlx">4</div>
+        <div class="step-body border-tlx bg-tlx">
+          <div class="step-header">
+            <span class="step-actor c-tlx">TLX</span>
+            <span class="step-name">Fetch Partner's Public Key → GET /keys/{partner_id}</span>
+          </div>
+          <div class="step-detail">
+            SDK ดึง Public key ของ Receiver จาก TLX: <code>GET /api/v1/keys/{receiver_id}</code><br/>
+            TLX ส่งคืน JWK ของ Receiver <span class="rfc-badge">RFC 7517</span><br/>
+            💡 Cache ได้ชั่วคราวเพื่อลด API calls
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num c-sdk">5</div>
+        <div class="step-body border-sdk bg-sdk">
+          <div class="step-header">
+            <span class="step-actor c-sdk">SDK</span>
+            <span class="step-name">Encrypt Message → JWE <span class="rfc-badge">RFC 7516</span></span>
+          </div>
+          <div class="step-detail">
+            เข้ารหัส JSON payload ด้วย Receiver's Public Key<br/>
+            • Key Encryption: <code>RSA-OAEP-256</code> หรือ <code>ECDH-ES</code><br/>
+            • Content Encryption: <code>A256GCM</code><br/>
+            ได้ผลลัพธ์เป็น Compact JWE: <code>header.key.iv.ciphertext.tag</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num c-net">6</div>
+        <div class="step-body border-net bg-net">
+          <div class="step-header">
+            <span class="step-actor c-net">NETWORK</span>
+            <span class="step-name">ส่ง Encrypted JWE ผ่าน TLX</span>
+          </div>
+          <div class="step-detail">
+            ERP SDK ส่ง JWE payload ไปยัง TLX Message endpoint<br/>
+            TLX ทำหน้าที่เป็น Message Broker → ส่งต่อให้ Receiver
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num c-tlx">7</div>
+        <div class="step-body border-tlx bg-tlx">
+          <div class="step-header">
+            <span class="step-actor c-tlx">TLX</span>
+            <span class="step-name">TLX บันทึก Log และส่งต่อ</span>
+          </div>
+          <div class="step-detail">
+            TLX บันทึก audit log, ตรวจสอบสิทธิ์ match คู่ค้า แล้วส่ง JWE ต่อให้ Receiver<br/>
+            ✅ Sender ได้รับ acknowledgement กลับมา
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ PANEL 4: Receive Message ═══════════════════════════ -->
+  <div class="tab-panel section-card" id="panel-receive">
+    <div class="section-title">📥 Receive Message Flow — การรับข้อมูล (Receiver Side)</div>
+    <div class="section-desc">
+      Flow นี้ทำงานเมื่อ ERP ได้รับ Encrypted JWE message จาก TLX — ถอดรหัสด้วย Private key ของตนเอง
+    </div>
+    <div class="flow">
+
+      <div class="flow-step">
+        <div class="step-num c-tlx">1</div>
+        <div class="step-body border-tlx bg-tlx">
+          <div class="step-header">
+            <span class="step-actor c-tlx">TLX</span>
+            <span class="step-name">TLX ส่ง Encrypted JWE มาให้ Receiver</span>
+          </div>
+          <div class="step-detail">
+            TLX ส่ง JWE payload มาให้ ERP Receiver ผ่าน Webhook / Polling endpoint<br/>
+            ข้อมูลที่ได้รับเป็น Compact JWE: <code>header.key.iv.ciphertext.tag</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num c-sdk">2</div>
+        <div class="step-body border-sdk bg-sdk">
+          <div class="step-header">
+            <span class="step-actor c-sdk">SDK</span>
+            <span class="step-name">Verify JWE Header</span>
+          </div>
+          <div class="step-detail">
+            อ่าน JWE Header เพื่อตรวจสอบ <code>alg</code> และ <code>enc</code> ที่ใช้<br/>
+            ตรวจสอบว่า <code>kid</code> ตรงกับ Key ที่ตัวเองถือ
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num c-sdk">3</div>
+        <div class="step-body border-sdk bg-sdk">
+          <div class="step-header">
+            <span class="step-actor c-sdk">SDK</span>
+            <span class="step-name">Decrypt JWE → JSON Plaintext <span class="rfc-badge">RFC 7516</span></span>
+          </div>
+          <div class="step-detail">
+            ถอดรหัส JWE ด้วย <code>privateKey</code> ของตัวเอง<br/>
+            • ถอดรหัส Content Encryption Key (CEK) ก่อน<br/>
+            • จากนั้น decrypt <code>ciphertext</code> ด้วย CEK + IV<br/>
+            ได้ผลลัพธ์เป็น JSON plaintext
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num c-sdk">4</div>
+        <div class="step-body border-sdk bg-sdk">
+          <div class="step-header">
+            <span class="step-actor c-sdk">SDK</span>
+            <span class="step-name">Validate Decrypted JSON Message</span>
+          </div>
+          <div class="step-detail">
+            ตรวจสอบโครงสร้าง JSON ที่ถอดรหัสแล้วว่าถูกต้องตาม Schema สพธอ.<br/>
+            • ตรวจ message integrity<br/>
+            • ตรวจสอบ <code>sender_id</code> ตรงกับคู่ค้าที่ match ไว้หรือไม่<br/>
+            • ตรวจ <code>timestamp</code> ป้องกัน Replay Attack
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num c-erp">5</div>
+        <div class="step-body border-erp bg-erp">
+          <div class="step-header">
+            <span class="step-actor c-erp">ERP</span>
+            <span class="step-name">นำข้อมูลเข้าสู่ระบบ ERP</span>
+          </div>
+          <div class="step-detail">
+            SDK ส่ง JSON plaintext ที่ผ่าน Validate แล้วให้ ERP ประมวลผล<br/>
+            ERP บันทึก Invoice / PO / GR เข้าระบบตามปกติ<br/>
+            ✅ ส่ง acknowledgement กลับไปยัง TLX
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ PANEL 5: TLX Endpoints ════════════════════════════ -->
+  <div class="tab-panel section-card" id="panel-endpoint">
+    <div class="section-title">🌐 TLX New Endpoints — 2 เส้นที่ต้องเพิ่ม</div>
+    <div class="section-desc">
+      เพื่อรองรับระบบ Key Management TLX ต้องเพิ่ม endpoint ใหม่ 2 เส้น ดังนี้
+    </div>
+
+    <div class="endpoint-box">
+      <h4>🔑 Key Management Endpoints</h4>
+
+      <div class="endpoint-row">
+        <span class="method-badge method-post">POST</span>
+        <div class="endpoint-info">
+          <code>/api/v1/keys/me</code>
+          <p><strong>Upload / Update Public Key</strong> — ERP ส่ง JWK (Public key) ของตัวเองมาเก็บที่ TLX<br/>
+          Request body: <code>{ "jwk": { ... } }</code> &nbsp;|&nbsp; Response: <code>{ "key_id": "...", "created_at": "..." }</code><br/>
+          Auth: Bearer token ของ Participant นั้น</p>
+        </div>
+      </div>
+
+      <div class="endpoint-row">
+        <span class="method-badge method-get">GET</span>
+        <div class="endpoint-info">
+          <code>/api/v1/keys/{participant_id}</code>
+          <p><strong>Fetch Partner's Public Key</strong> — ดึง JWK ของ Participant ที่ match แล้วเท่านั้น<br/>
+          Response: <code>{ "participant_id": "...", "jwk": { "kty":"RSA", "use":"enc", "alg":"RSA-OAEP-256", ... } }</code><br/>
+          Format: JWK ตาม <span class="rfc-badge">RFC 7517</span> &nbsp;|&nbsp; Auth: เฉพาะ Participant ที่ match กันเท่านั้น</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:28px; border:1.5px solid #dbeafe; border-radius:10px; padding:18px 22px; background:#eff6ff;">
+      <h4 style="color:var(--erp); font-size:0.9rem; font-weight:700; margin-bottom:12px;">🔒 Security Considerations สำหรับ TLX</h4>
+      <div style="font-size:0.83rem; color:var(--muted); line-height:1.7;">
+        • Public key จะถูก associate กับ <code>participant_id</code> ที่ authenticated แล้วเท่านั้น<br/>
+        • <code>GET /keys/{participant_id}</code> ต้องตรวจสอบว่า requester กับ participant_id นั้น <strong>match กันใน TLX แล้ว</strong><br/>
+        • ควรมี Key rotation support — เมื่อ POST ใหม่ ให้ invalidate key เก่าหรือ version ไว้<br/>
+        • Log ทุกครั้งที่มีการ upload/fetch key เพื่อ audit trail<br/>
+        • Rate limit endpoint เพื่อป้องกัน enumeration attack
+      </div>
+    </div>
+
+    <div style="margin-top:20px; border:1.5px solid #fde68a; border-radius:10px; padding:18px 22px; background:#fffbeb;">
+      <h4 style="color:var(--net); font-size:0.9rem; font-weight:700; margin-bottom:10px;">📐 JWE Structure Summary</h4>
+      <div style="font-size:0.83rem; color:var(--muted); line-height:1.7; font-family:monospace;">
+        Compact Serialization (RFC 7516):<br/>
+        <code style="font-size:0.8rem; color:#92400e;">BASE64URL(JWE Header) . BASE64URL(Encrypted Key) . BASE64URL(IV) . BASE64URL(Ciphertext) . BASE64URL(Auth Tag)</code><br/><br/>
+        แนะนำ Algorithm:<br/>
+        • <strong>alg</strong>: <code>RSA-OAEP-256</code> (Key Encryption)<br/>
+        • <strong>enc</strong>: <code>A256GCM</code> (Content Encryption)
+      </div>
+    </div>
+  </div>
+
+</div><!-- /tab-panels -->
+
+<script>
+  // Tab switching
+  document.getElementById('tabs').addEventListener('click', function(e) {
+    const btn = e.target.closest('.tab');
+    if (!btn) return;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.panel).classList.add('active');
+  });
+</script>
+
+</body>
+</html>
