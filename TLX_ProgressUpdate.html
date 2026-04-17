@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TLX Platform — Progress Update</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Sarabun', 'Noto Sans Thai', sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #e2e8f0;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+
+  header {
+    background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+    border-radius: 16px;
+    padding: 32px 40px;
+    margin-bottom: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  }
+  header h1 { font-size: 2.2rem; margin-bottom: 8px; color: #fff; }
+  header .sub { color: #cbd5e1; font-size: 1rem; }
+  header .meta { margin-top: 12px; font-size: 0.9rem; color: #e2e8f0; opacity: 0.85; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  .card .label { font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+  .card .value { font-size: 2.2rem; font-weight: 700; margin-top: 8px; color: #f1f5f9; }
+  .card .hint { font-size: 0.85rem; color: #64748b; margin-top: 4px; }
+  .card.ok .value { color: #22c55e; }
+  .card.pending .value { color: #f59e0b; }
+  .card.total .value { color: #3b82f6; }
+  .card.pct .value { color: #a855f7; }
+
+  .overall-progress {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .overall-progress h2 { font-size: 1.2rem; margin-bottom: 12px; color: #f1f5f9; }
+  .progress-bar {
+    background: #0f172a;
+    border-radius: 999px;
+    height: 24px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #3b82f6);
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: width 0.5s ease;
+  }
+
+  .phase {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .phase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .phase-title { font-size: 1.25rem; font-weight: 700; color: #f1f5f9; }
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .badge.done { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; }
+  .badge.progress { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; }
+  .badge.pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+  .badge.not-started { background: rgba(100, 116, 139, 0.2); color: #cbd5e1; border: 1px solid #64748b; }
+
+  .phase-progress { margin: 12px 0; }
+  .phase-progress .progress-bar { height: 10px; }
+
+  .task-list { list-style: none; padding: 0; margin-top: 16px; }
+  .task-item {
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    border-radius: 8px;
+    background: #0f172a;
+    border-left: 3px solid #475569;
+    font-size: 0.92rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .task-item.done { border-left-color: #22c55e; background: rgba(34, 197, 94, 0.08); }
+  .task-item.pending { border-left-color: #f59e0b; }
+  .task-item.optional { border-left-color: #64748b; opacity: 0.7; }
+  .task-item.checkpoint { border-left-color: #a855f7; background: rgba(168, 85, 247, 0.08); font-style: italic; }
+  .task-num { font-weight: 700; color: #94a3b8; min-width: 38px; }
+  .task-text { flex: 1; color: #cbd5e1; }
+  .task-item.done .task-text { color: #e2e8f0; }
+  .icon { font-weight: 700; min-width: 20px; text-align: center; }
+  .icon.done { color: #22c55e; }
+  .icon.pending { color: #f59e0b; }
+  .icon.checkpoint { color: #a855f7; }
+
+  .notes {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 24px;
+  }
+  .notes h2 { font-size: 1.2rem; margin-bottom: 12px; color: #f1f5f9; }
+  .notes ul { padding-left: 20px; color: #cbd5e1; }
+  .notes li { margin-bottom: 6px; font-size: 0.9rem; }
+
+  footer {
+    text-align: center;
+    color: #64748b;
+    font-size: 0.85rem;
+    margin-top: 32px;
+    padding: 16px;
+  }
+
+  @media (max-width: 640px) {
+    header h1 { font-size: 1.6rem; }
+    .card .value { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>TLX Platform — Progress Update</h1>
+    <div class="sub">AWS Microservices Migration · Implementation Plan</div>
+    <div class="meta">Source: tasks_16042026.md · Report Date: 17 April 2026</div>
+  </header>
+
+  <div class="summary-grid">
+    <div class="card total">
+      <div class="label">Total Tasks</div>
+      <div class="value">86</div>
+      <div class="hint">Across 5 phases + addendum</div>
+    </div>
+    <div class="card ok">
+      <div class="label">Completed</div>
+      <div class="value">11</div>
+      <div class="hint">Phase 1 Foundation tasks</div>
+    </div>
+    <div class="card pending">
+      <div class="label">Remaining</div>
+      <div class="value">75</div>
+      <div class="hint">Phases 2–5 + Addendum</div>
+    </div>
+    <div class="card pct">
+      <div class="label">Overall Completion</div>
+      <div class="value">12.8%</div>
+      <div class="hint">11 of 86 tasks</div>
+    </div>
+  </div>
+
+  <div class="overall-progress">
+    <h2>Overall Migration Progress</h2>
+    <div class="progress-bar">
+      <div class="progress-fill" style="width: 12.8%;">12.8%</div>
+    </div>
+  </div>
+
+  <!-- Phase 1 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-title">Phase 1 — Foundation</div>
+      <span class="badge done">COMPLETED · 11/11</span>
+    </div>
+    <div style="color:#94a3b8;font-size:0.9rem;">VPC, Aurora PostgreSQL, Secrets Manager, S3, KMS, CloudFormation Base Stacks</div>
+    <div class="phase-progress">
+      <div class="progress-bar"><div class="progress-fill" style="width:100%;">100%</div></div>
+    </div>
+    <ul class="task-list">
+      <li class="task-item done"><span class="icon done">✓</span><span class="task-num">1.1</span><span class="task-text">CloudFormation VPC networking stack (vpc.yaml)</span></li>
+      <li class="task-item done"><span class="icon done">✓</span><span class="task-num">1.2</span><span class="task-text">CloudFormation security groups stack</span></li>
+      <li class="task-item done"><span class="icon done">✓</span><span class="task-num">1.3</span><span class="task-text">CloudFormation Network ACLs stack</span></li>
+      <li class="task-item done"><span class="icon done">✓</span><span class="task-num">1.4</span><span class="task-text">CloudFormation VPC endpoints stack</span></li>
+      <li class="task-item done"><span class="icon done">✓</span><span class="task-num">1.5</span><span class="task-text">CloudFormation KMS keys stack (4 CMKs)</span></li>
+      <li class="task-item done"><span class="icon done">✓</span><span class="task-num">1.6</span><span class="task-text">CloudFormation Aurora PostgreSQL stack (Multi-AZ + RDS Proxy)</span></li>
+      <li class="task-item done"><span class="icon done">✓</span><span class="task-num">1.7</span><span class="task-text">Database migration runner script (8 tables)</span></li>
+      <li class="task-item done"><span class="icon done">✓</span><span class="task-num">1.8</span><span class="task-text">CloudFormation Secrets Manager & Parameter Store stack</span></li>
+      <li class="task-item done"><span class="icon done">✓</span><span class="task-num">1.9</span><span class="task-text">CloudFormation S3 buckets stack (SSE-KMS, Object Lock)</span></li>
+      <li class="task-item done"><span class="icon done">✓</span><span class="task-num">1.10</span><span class="task-text">CloudFormation IAM roles stack (least-privilege)</span></li>
+      <li class="task-item done"><span class="icon done">✓</span><span class="task-num">1.11</span><span class="task-text">CloudFormation main/root stack (multi-env)</span></li>
+      <li class="task-item checkpoint"><span class="icon checkpoint">◆</span><span class="task-num">CP</span><span class="task-text">Checkpoint — Phase 1 Validation (pending)</span></li>
+    </ul>
+  </div>
+
+  <!-- Phase 2 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-title">Phase 2 — Core Services</div>
+      <span class="badge not-started">NOT STARTED · 0/20</span>
+    </div>
+    <div style="color:#94a3b8;font-size:0.9rem;">ECS Cluster, Platform API + SDK API on ECS, API Gateway, ECR, CI/CD, SNS/SQS</div>
+    <div class="phase-progress">
+      <div class="progress-bar"><div class="progress-fill" style="width:0%;"></div></div>
+    </div>
+    <ul class="task-list">
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">3.1</span><span class="task-text">CloudFormation ECR repositories stack</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">3.2</span><span class="task-text">CloudFormation ECS cluster stack (Fargate)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">3.3</span><span class="task-text">Platform API config loading — AppConfig::from_aws()</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">3.4</span><span class="task-text">Platform API audit logging — async SNS publish</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">3.5</span><span class="task-text">Large payload S3 offload (&gt; 256 KB)</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">3.6*</span><span class="task-text">Property test — S3 offload threshold</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">3.7</span><span class="task-text">OAuth 2.0 scope enforcement middleware</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">3.8*</span><span class="task-text">Property test — OAuth 2.0 scope enforcement</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">3.9</span><span class="task-text">Platform API Dockerfile for ECS deployment</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">3.10</span><span class="task-text">CloudFormation Platform API ECS service stack</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">3.11</span><span class="task-text">SDK API ECS deployment + CloudFormation stack</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">3.12</span><span class="task-text">CloudFormation API Gateway stack (Cognito authorizer)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">3.13</span><span class="task-text">CloudFormation SNS topics stack (SSE-KMS)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">3.14</span><span class="task-text">CloudFormation SQS queues stack (FIFO + DLQs)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">3.15</span><span class="task-text">CloudFormation Lambda functions stack</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">3.16</span><span class="task-text">Idempotent SQS message processing</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">3.17*</span><span class="task-text">Property test — idempotent message processing</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">3.18</span><span class="task-text">Sync validation + async processing for message send</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">3.19*</span><span class="task-text">Property test — sync validation + async processing</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">3.20</span><span class="task-text">CloudFormation CI/CD pipeline stacks (CodeBuild, CodePipeline)</span></li>
+      <li class="task-item checkpoint"><span class="icon checkpoint">◆</span><span class="task-num">CP</span><span class="task-text">Checkpoint — Phase 2 Validation</span></li>
+    </ul>
+  </div>
+
+  <!-- Phase 3 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-title">Phase 3 — Security &amp; Auth</div>
+      <span class="badge not-started">NOT STARTED · 0/12</span>
+    </div>
+    <div style="color:#94a3b8;font-size:0.9rem;">Cognito, WAF, GuardDuty, Security Hub, CloudTrail, mTLS, Zero Trust</div>
+    <div class="phase-progress">
+      <div class="progress-bar"><div class="progress-fill" style="width:0%;"></div></div>
+    </div>
+    <ul class="task-list">
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">5.1</span><span class="task-text">CloudFormation Cognito stack (User Pool + Identity Pool)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">5.2</span><span class="task-text">Cognito user migration script</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">5.3</span><span class="task-text">Platform API — replace custom JWT with Cognito JWT</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">5.4</span><span class="task-text">CloudFormation WAF stack (Managed Rules + rate limit)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">5.5</span><span class="task-text">CloudFormation GuardDuty + Security Hub stack</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">5.6</span><span class="task-text">CloudFormation CloudTrail stack (multi-region)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">5.7</span><span class="task-text">CloudFormation AWS Config stack (CIS Benchmark rules)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">5.8</span><span class="task-text">CloudFormation certificates stack (ACM + Private CA)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">5.9</span><span class="task-text">mTLS and Zero Trust service mesh configuration</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">5.10</span><span class="task-text">VPC Flow Logs and network monitoring</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">5.11</span><span class="task-text">IAM Access Analyzer + advanced IAM controls (SCPs, MFA)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">5.12</span><span class="task-text">Container security hardening</span></li>
+      <li class="task-item checkpoint"><span class="icon checkpoint">◆</span><span class="task-num">CP</span><span class="task-text">Checkpoint — Phase 3 Validation</span></li>
+    </ul>
+  </div>
+
+  <!-- Phase 4 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-title">Phase 4 — Optimization</div>
+      <span class="badge not-started">NOT STARTED · 0/15</span>
+    </div>
+    <div style="color:#94a3b8;font-size:0.9rem;">CloudFront, Auto Scaling, ElastiCache Redis, CloudWatch, SES, Load Testing</div>
+    <div class="phase-progress">
+      <div class="progress-bar"><div class="progress-fill" style="width:0%;"></div></div>
+    </div>
+    <ul class="task-list">
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">7.1</span><span class="task-text">CloudFormation ElastiCache Redis stack (Multi-AZ)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">7.2</span><span class="task-text">Cache-aside pattern in Platform API with Redis</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">7.3*</span><span class="task-text">Property test — cache-aside correctness</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">7.4*</span><span class="task-text">Property test — cache invalidation</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">7.5</span><span class="task-text">Circuit breaker pattern for Redis cache access</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">7.6*</span><span class="task-text">Property test — cache circuit breaker</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">7.7</span><span class="task-text">CloudFormation Auto Scaling configuration</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">7.8</span><span class="task-text">CloudFormation CloudFront stack (HTTPS + ACM)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">7.9</span><span class="task-text">CloudFormation CloudWatch observability (logs, dashboards, alarms)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">7.10</span><span class="task-text">CloudFormation X-Ray tracing stack</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">7.11</span><span class="task-text">CloudFormation SES stack (domain + DKIM)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">7.12</span><span class="task-text">Cross-region replication for disaster recovery</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">7.13</span><span class="task-text">Load testing suite with k6 (500–1000 users)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">7.14</span><span class="task-text">Integrate load testing into CI/CD pipeline</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">7.15</span><span class="task-text">DAST scanning in CI/CD pipeline (OWASP ZAP)</span></li>
+      <li class="task-item checkpoint"><span class="icon checkpoint">◆</span><span class="task-num">CP</span><span class="task-text">Checkpoint — Phase 4 Validation</span></li>
+    </ul>
+  </div>
+
+  <!-- Phase 5 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-title">Phase 5 — Portal</div>
+      <span class="badge not-started">NOT STARTED · 0/26</span>
+    </div>
+    <div style="color:#94a3b8;font-size:0.9rem;">Next.js Vendor + Admin Portal, BFF Layer, Cognito PKCE, Security, i18n, CI/CD</div>
+    <div class="phase-progress">
+      <div class="progress-bar"><div class="progress-fill" style="width:0%;"></div></div>
+    </div>
+    <ul class="task-list">
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">9.1</span><span class="task-text">Initialize Next.js Portal project (TypeScript + Tailwind + shadcn/ui + next-intl)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">9.2</span><span class="task-text">BFF core utilities (auth, csrf, sanitize, rate-limit, bff-proxy, validators)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">9.3</span><span class="task-text">BFF auth routes (login, refresh, logout)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">9.4</span><span class="task-text">Next.js Middleware for auth guard and locale</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">9.5</span><span class="task-text">Security headers configuration (CSP, HSTS, etc.)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">9.6</span><span class="task-text">Shared UI components (Sidebar, Header, DataTable, forms)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">9.7</span><span class="task-text">Vendor pages (transactions, keys, profile)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">9.8</span><span class="task-text">Admin pages — Dashboard, Participants, Matchings, Messages</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">9.9</span><span class="task-text">Admin pages — Users Management, Audit Logs</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">9.10</span><span class="task-text">Session management and force-logout detection</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">9.11</span><span class="task-text">Origin validation in BFF</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">9.12*</span><span class="task-text">Property test — BFF token isolation</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">9.13*</span><span class="task-text">Property test — security headers completeness</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">9.14*</span><span class="task-text">Property test — client-side route RBAC</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">9.15*</span><span class="task-text">Property test — BFF role enforcement</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">9.16*</span><span class="task-text">Property test — cookie security flags</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">9.17*</span><span class="task-text">Property test — CSRF protection</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">9.18*</span><span class="task-text">Property test — input sanitization</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">9.19*</span><span class="task-text">Property test — origin validation</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">9.20*</span><span class="task-text">Property test — BFF token injection &amp; header stripping</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">9.21*</span><span class="task-text">Property test — i18n translation completeness</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">9.22*</span><span class="task-text">Property test — error message locale</span></li>
+      <li class="task-item optional"><span class="icon pending">☐</span><span class="task-num">9.23*</span><span class="task-text">Property test — vendor creation validation</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">9.24</span><span class="task-text">Portal Dockerfile (multi-stage build)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">9.25</span><span class="task-text">CloudFormation Portal ECS service stack</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">9.26</span><span class="task-text">Portal CI/CD pipeline (E2E, Lighthouse, CloudFront invalidation)</span></li>
+      <li class="task-item checkpoint"><span class="icon checkpoint">◆</span><span class="task-num">CP</span><span class="task-text">Checkpoint — Phase 5 Validation</span></li>
+    </ul>
+  </div>
+
+  <!-- Phase 5 Addendum -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-title">Phase 5 Addendum — AI Dev Team Configuration</div>
+      <span class="badge not-started">NOT STARTED · 0/2</span>
+    </div>
+    <div style="color:#94a3b8;font-size:0.9rem;">Kiro Steering, Hooks, Rules</div>
+    <div class="phase-progress">
+      <div class="progress-bar"><div class="progress-fill" style="width:0%;"></div></div>
+    </div>
+    <ul class="task-list">
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">11.1</span><span class="task-text">Kiro steering files (CloudFormation, Rust, AWS security, checklist)</span></li>
+      <li class="task-item pending"><span class="icon pending">☐</span><span class="task-num">11.2</span><span class="task-text">Kiro hooks (cfn-lint, Rust quality, secret detection, security review)</span></li>
+      <li class="task-item checkpoint"><span class="icon checkpoint">◆</span><span class="task-num">CP</span><span class="task-text">Final Checkpoint — Full Migration Validation</span></li>
+    </ul>
+  </div>
+
+  <div class="notes">
+    <h2>Notes &amp; Legend</h2>
+    <ul>
+      <li><strong>✓</strong> = Completed task · <strong>☐</strong> = Pending task · <strong>◆</strong> = Checkpoint / milestone</li>
+      <li>Tasks marked with <strong>*</strong> (asterisk) are optional property tests — can be skipped for faster MVP delivery.</li>
+      <li>Property tests 1–7 use <code>proptest</code> (Rust) for backend application logic.</li>
+      <li>Property tests 8–19 use <code>fast-check</code> (TypeScript) for Next.js Portal logic.</li>
+      <li>CloudFormation templates should be validated with <code>cfn-lint</code> and <code>cfn-nag</code> before deployment.</li>
+      <li>All secrets must be stored in Secrets Manager — never in environment variables or source code.</li>
+      <li>The existing Docker Compose setup is maintained as rollback option until Phase 2 is validated.</li>
+      <li><strong>Next action:</strong> Complete Phase 1 Checkpoint validation, then start Phase 2 Core Services.</li>
+    </ul>
+  </div>
+
+  <footer>
+    TLX Platform Migration Progress · Generated from tasks_16042026.md · 17 April 2026
+  </footer>
+
+</div>
+</body>
+</html>
