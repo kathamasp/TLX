@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TLX Platform — สรุปภาพรวมระบบ</title>
+<style>
+  :root {
+    --primary: #1e40af;
+    --primary-light: #3b82f6;
+    --secondary: #0f766e;
+    --accent: #d97706;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --success: #16a34a;
+    --warning: #ea580c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Sarabun", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 24px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    padding: 40px 32px;
+    border-radius: 16px;
+    margin-bottom: 32px;
+    box-shadow: 0 10px 30px rgba(30, 64, 175, 0.2);
+  }
+  header h1 { font-size: 2.2rem; margin-bottom: 8px; font-weight: 700; }
+  header .subtitle { font-size: 1.05rem; opacity: 0.95; }
+  header .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    margin-top: 12px;
+  }
+
+  section {
+    background: var(--card);
+    padding: 28px 32px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-left: 4px solid var(--primary-light);
+  }
+  section h2 {
+    color: var(--primary);
+    font-size: 1.4rem;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  section h2 .num {
+    background: var(--primary);
+    color: white;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+  section h3 {
+    color: var(--secondary);
+    font-size: 1.1rem;
+    margin-top: 18px;
+    margin-bottom: 10px;
+  }
+  p { margin-bottom: 10px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 0.95rem;
+  }
+  th {
+    background: var(--primary);
+    color: white;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+  }
+  td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  tr:nth-child(even) { background: #f8fafc; }
+  tr:hover { background: #eff6ff; }
+
+  ul { padding-left: 20px; margin: 10px 0; }
+  li { margin-bottom: 6px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin: 14px 0;
+  }
+  .card {
+    background: #f1f5f9;
+    padding: 16px;
+    border-radius: 10px;
+    border-left: 3px solid var(--primary-light);
+  }
+  .card .label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .card .value { font-weight: 600; color: var(--primary); }
+
+  .flow {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 16px;
+    border-radius: 8px;
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 0.85rem;
+    overflow-x: auto;
+    line-height: 1.5;
+    margin: 12px 0;
+    white-space: pre;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin: 2px 4px 2px 0;
+  }
+  .tag-blue { background: #dbeafe; color: #1e40af; }
+  .tag-green { background: #d1fae5; color: #065f46; }
+  .tag-orange { background: #fed7aa; color: #9a3412; }
+  .tag-purple { background: #e9d5ff; color: #6b21a8; }
+
+  .highlight-box {
+    background: linear-gradient(to right, #fef3c7, #fef9c3);
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin: 14px 0;
+  }
+
+  .phase-list {
+    counter-reset: phase;
+    list-style: none;
+    padding: 0;
+  }
+  .phase-list li {
+    counter-increment: phase;
+    background: #f8fafc;
+    padding: 12px 16px 12px 50px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    position: relative;
+    border-left: 3px solid var(--secondary);
+  }
+  .phase-list li::before {
+    content: counter(phase);
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--secondary);
+    color: white;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    padding: 24px 0;
+    font-size: 0.9rem;
+    margin-top: 16px;
+  }
+
+  @media (max-width: 700px) {
+    body { padding: 12px; }
+    section { padding: 20px; }
+    header { padding: 28px 20px; }
+    header h1 { font-size: 1.6rem; }
+    table { font-size: 0.85rem; }
+    th, td { padding: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>TLX Platform — ภาพรวมระบบ</h1>
+  <div class="subtitle">Trade Link Exchange — แพลตฟอร์มกลางแลกเปลี่ยนเอกสารทางการค้า</div>
+  <span class="badge">กำกับโดย สพธอ. (ETDA)</span>
+  <span class="badge">End-to-End Encryption (JWE / RFC 7516)</span>
+</header>
+
+<section>
+  <h2><span class="num">1</span>บทนำ</h2>
+  <p><strong>TLX (Trade Link Exchange)</strong> คือแพลตฟอร์มกลางที่ใช้แลกเปลี่ยนเอกสารทางการค้าระหว่างผู้ประกอบการ ภายใต้การกำกับดูแลของ <strong>สพธอ. (ETDA)</strong></p>
+  <div class="highlight-box">
+    <strong>หลักสำคัญ:</strong> ระบบเข้ารหัสแบบ End-to-End ด้วย JWE (RFC 7516) ทำให้ TLX <em>ไม่สามารถ</em>อ่านเนื้อหาเอกสารได้
+    เก็บเฉพาะ <strong>Audit Evidence</strong> (Hash, Signature, Metadata) เพื่อความปลอดภัย เชื่อถือได้ และตรวจสอบย้อนหลังได้
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">2</span>สถาปัตยกรรมระบบ</h2>
+  <h3>Infrastructure (AWS Landing Zone)</h3>
+  <p>ใช้ 2 Account แบบแยกหน้าที่: <strong>Account Infra</strong> (Network Hub) และ <strong>Account Workload</strong> (Application Layer) เชื่อมกันผ่าน Transit Gateway</p>
+
+  <h3>Application Services</h3>
+  <table>
+    <tr><th>Service</th><th>เทคโนโลยี</th><th>Port</th><th>หน้าที่</th></tr>
+    <tr><td><strong>TLX Platform API</strong></td><td>Rust/Axum + PostgreSQL</td><td>8081</td><td>Core API</td></tr>
+    <tr><td><strong>TLX SDK API</strong></td><td>Rust/Axum</td><td>8080</td><td>REST wrapper สำหรับ JWE</td></tr>
+    <tr><td><strong>TLX Portal</strong></td><td>Next.js 15 + TypeScript</td><td>3000</td><td>Admin + Participant UI</td></tr>
+    <tr><td><strong>TLX SDK</strong></td><td>Rust library</td><td>—</td><td>Crypto, Message Builder</td></tr>
+    <tr><td><strong>TLX Canon</strong></td><td>Rust library</td><td>—</td><td>RFC 8785 Canonicalization</td></tr>
+    <tr><td><strong>Mock ERP</strong></td><td>Rust/Axum</td><td>3001/3002</td><td>ทดสอบ Seller + Buyer</td></tr>
+  </table>
+
+  <h3>Cryptographic Algorithms</h3>
+  <div class="grid">
+    <div class="card"><div class="label">Key Wrapping</div><div class="value">RSA-OAEP-256</div></div>
+    <div class="card"><div class="label">Content Encryption</div><div class="value">A256GCM</div></div>
+    <div class="card"><div class="label">Key Types</div><div class="value">RSA-4096, RSA-2048, EC P-256</div></div>
+    <div class="card"><div class="label">Passphrase KDF</div><div class="value">PBKDF2-HMAC-SHA256 (600K)</div></div>
+    <div class="card"><div class="label">Payload Hash</div><div class="value">JCS-SHA256 (RFC 8785)</div></div>
+    <div class="card"><div class="label">Data at Rest</div><div class="value">AES-256 (KMS CMK)</div></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">3</span>RBAC — 4 Roles</h2>
+  <table>
+    <tr><th>Role</th><th>คำอธิบาย</th><th>สิทธิ์หลัก</th></tr>
+    <tr><td><span class="tag tag-purple">TLX Admin</span></td><td>เจ้าหน้าที่ สพธอ.</td><td>เข้าถึงทุกอย่าง — KYC/KYB, monitoring, audit, dispute</td></tr>
+    <tr><td><span class="tag tag-blue">Participant Admin</span></td><td>ผู้ดูแลระบบขององค์กร</td><td>จัดการ keys, users, document registrations</td></tr>
+    <tr><td><span class="tag tag-green">Participant User</span></td><td>ผู้ใช้งานทั่วไป</td><td>ดู transactions, ส่ง/รับเอกสาร</td></tr>
+    <tr><td><span class="tag tag-orange">Support Staff</span></td><td>ทีม Support สพธอ.</td><td>อ่านอย่างเดียว</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2><span class="num">4</span>Participant Types & Integration Modes</h2>
+  <h3>ประเภทผู้เข้าร่วม</h3>
+  <p>
+    <span class="tag tag-blue">Seller</span> ผู้ขาย (QT, Invoice, Delivery Note) &nbsp;
+    <span class="tag tag-green">Buyer</span> ผู้ซื้อ (PO, Payment, Receipt) &nbsp;
+    <span class="tag tag-purple">Both</span> ทั้งซื้อและขาย
+  </p>
+  <h3>Integration Modes</h3>
+  <table>
+    <tr><th>Mode</th><th>คำอธิบาย</th></tr>
+    <tr><td><strong>PUSH</strong></td><td>TLX ส่งเอกสารไปยัง Endpoint ของผู้รับโดยตรง</td></tr>
+    <tr><td><strong>PULL</strong></td><td>ผู้รับมาดึงเอกสารจาก Pull Inbox ของ TLX</td></tr>
+    <tr><td><strong>BOTH</strong></td><td>ส่งไปยัง Endpoint + เก็บใน Pull Inbox</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2><span class="num">5</span>เอกสารที่รองรับ — 12 ประเภท</h2>
+  <table>
+    <tr><th>#</th><th>Document Type</th><th>คำอธิบาย</th><th>ผู้ออก</th></tr>
+    <tr><td>1</td><td>PRODUCT_CATALOG</td><td>รายการสินค้า</td><td>Seller</td></tr>
+    <tr><td>2</td><td>QUOTATION</td><td>ใบเสนอราคา</td><td>Seller</td></tr>
+    <tr><td>3</td><td>QUOTATION_CONFIRM</td><td>ยืนยันใบเสนอราคา</td><td>Buyer</td></tr>
+    <tr><td>4</td><td>PURCHASE_ORDER</td><td>ใบสั่งซื้อ</td><td>Buyer</td></tr>
+    <tr><td>5</td><td>SALES_ORDER</td><td>ยืนยันคำสั่งซื้อ</td><td>Seller</td></tr>
+    <tr><td>6</td><td>INVOICE</td><td>ใบแจ้งหนี้/ใบกำกับภาษี</td><td>Seller</td></tr>
+    <tr><td>7</td><td>DELIVERY_ORDER</td><td>ใบส่งสินค้า</td><td>Seller</td></tr>
+    <tr><td>8</td><td>RECEIPT</td><td>ใบรับสินค้า</td><td>Buyer</td></tr>
+    <tr><td>9</td><td>INVOICE_COMPLETE</td><td>ยืนยันวางบิลครบ</td><td>Seller</td></tr>
+    <tr><td>10</td><td>AR_BILL</td><td>แจ้งวางบิล</td><td>Buyer</td></tr>
+    <tr><td>11</td><td>CREDIT_NOTE</td><td>ใบลดหนี้</td><td>Seller</td></tr>
+    <tr><td>12</td><td>DEBIT_NOTE</td><td>ใบเพิ่มหนี้</td><td>Seller</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2><span class="num">6</span>กระบวนการหลัก (Core Flows)</h2>
+  <h3>6.1 Participant Registration + KYC/KYB</h3>
+  <p>ผู้ประกอบการสมัครผ่าน Portal → TLX Admin ตรวจสอบ → Approve/Reject → ระบบสร้าง Cognito User + Secret + Invitation Email</p>
+
+  <h3>6.2 Key Generation + Registration</h3>
+  <p>Generate RSA-4096 ที่ฝั่ง Client → ส่ง Public JWK ลงทะเบียน → <strong>Private Key ไม่เคยส่งให้ TLX</strong></p>
+
+  <h3>6.3 Key Rotation (Overlap Window)</h3>
+  <div class="flow">Key Lifecycle:  ACTIVE → DEPRECATED → REVOKED
+
+1. Generate New Key Pair
+2. PUT /keys/{old}/rotate  (Atomic Transaction)
+3. Overlap Window — old key ใช้ decrypt ได้ / new key ใช้ encrypt
+4. GET /keys/{old}/drain-status  (รอจน in-flight = 0)
+5. POST /keys/{old}/complete-rotation  → REVOKED</div>
+
+  <h3>6.4 Partner Pairing</h3>
+  <p>ค้นหา → ส่งคำขอ → Email แจ้ง → Verification รหัส 6 หลัก → Accept → พร้อมแลกเปลี่ยนเอกสาร</p>
+
+  <h3>6.5 Message Exchange — Push Mode</h3>
+  <ol style="padding-left: 20px;">
+    <li>ดึง Public Key ของผู้รับ</li>
+    <li>สร้าง Payload ตาม ETDA Format</li>
+    <li>Canonicalize (RFC 8785) → JCS-SHA256</li>
+    <li>Encrypt ด้วย Public Key ผู้รับ → JWE Token</li>
+    <li>POST /v1/messages → Validate (Auth, Active, Matching, Schema, Idempotency)</li>
+    <li>Audit Evidence (Hash, Key ID, Timestamp)</li>
+    <li>Route → HTTP POST → Endpoint (Retry 3x → DLQ)</li>
+  </ol>
+
+  <h3>6.6 Message Exchange — Pull Mode</h3>
+  <p>Receiver Poll Inbox → ดึงเอกสาร → Decrypt ด้วย Private Key → Verify Hash → DELETE (TTL 30 วัน)</p>
+</section>
+
+<section>
+  <h2><span class="num">7</span>Transaction Flow — Full Purchase Lifecycle</h2>
+  <ol class="phase-list">
+    <li><strong>Product Catalog:</strong> Seller → PRODUCT_CATALOG → Buyer</li>
+    <li><strong>Quotation:</strong> QUOTATION ↔ QUOTATION_CONFIRM</li>
+    <li><strong>Order:</strong> PURCHASE_ORDER → SALES_ORDER</li>
+    <li><strong>Delivery:</strong> DELIVERY_ORDER → RECEIPT</li>
+    <li><strong>Invoice:</strong> Seller → INVOICE → Buyer</li>
+    <li><strong>Billing & Payment:</strong> INVOICE_COMPLETE → AR_BILL</li>
+    <li><strong>Adjustments:</strong> CREDIT_NOTE / DEBIT_NOTE (ถ้ามี)</li>
+  </ol>
+</section>
+
+<section>
+  <h2><span class="num">8</span>Message Validation Pipeline</h2>
+  <h3>Structural (JSON Schema)</h3>
+  <ul>
+    <li>Message ID (UUID), Sender/Receiver Tax ID (13 หลัก)</li>
+    <li>Document Type (1 ใน 12), Timestamp (ISO 8601), Schema Version</li>
+  </ul>
+  <h3>Semantic</h3>
+  <ul>
+    <li>Sender Active, Receiver มีอยู่ และรองรับ Document Type</li>
+    <li>Matching/Pairing มีอยู่, Message ID ไม่ซ้ำ (Idempotency)</li>
+  </ul>
+  <h3>Schema Versioning</h3>
+  <ul>
+    <li>เก็บใน Schema Registry (PostgreSQL)</li>
+    <li>Admin จัดการผ่าน Portal ไม่ต้องแก้ source code</li>
+    <li>รองรับหลาย version พร้อมกัน (backward compatible)</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">9</span>Trust Services (3 ระดับ)</h2>
+  <div class="grid">
+    <div class="card" style="border-left-color: var(--success);">
+      <div class="label">ระดับ 1</div>
+      <div class="value">Operational / Audit / Evidence</div>
+      <p style="font-size: 0.9rem; margin-top: 8px;">Message ID, Hash, Key ID, Signature, Access Log</p>
+    </div>
+    <div class="card" style="border-left-color: var(--warning);">
+      <div class="label">ระดับ 2</div>
+      <div class="value">Analytical Summary</div>
+      <p style="font-size: 0.9rem; margin-top: 8px;">k-anonymity (กลุ่มน้อยกว่า 5 ซ่อน), ไม่มี PII</p>
+    </div>
+    <div class="card" style="border-left-color: #dc2626;">
+      <div class="label">ระดับ 3</div>
+      <div class="value">Restricted Case Data</div>
+      <p style="font-size: 0.9rem; margin-top: 8px;">เฉพาะ TLX Admin, ต้องระบุ Justification</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10</span>Product Catalog Management</h2>
+  <ul>
+    <li>CRUD สินค้าแยกตามผู้ขาย (SKU, GTIN, UNSPSC/HS Code, ราคา, หน่วยนับ)</li>
+    <li>Full-text Search (PostgreSQL tsvector + GIN index)</li>
+    <li>Faceted Search: หมวดหมู่, ช่วงราคา, ยี่ห้อ, GTIN, ผู้ขาย</li>
+    <li>Bulk Import (JSON, สูงสุด 1,000 รายการ/ครั้ง)</li>
+    <li>รูปภาพสูงสุด 10 + Spec Sheet 5 → S3</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">11</span>Notification System</h2>
+  <table>
+    <tr><th>Event</th><th>คำอธิบาย</th></tr>
+    <tr><td>DOCUMENT_RECEIVED</td><td>มีเอกสารเข้าใหม่</td></tr>
+    <tr><td>TRANSACTION_STATUS_CHANGE</td><td>สถานะเปลี่ยน</td></tr>
+    <tr><td>KEY_EXPIRY_WARNING</td><td>Key ใกล้หมดอายุ</td></tr>
+    <tr><td>DELIVERY_FAILURE</td><td>ส่งเอกสารล้มเหลว</td></tr>
+  </table>
+  <p style="margin-top: 10px;">ช่องทาง: <strong>Email (Amazon SES)</strong> — Default เปิดทุก event สำหรับผู้ประกอบการใหม่</p>
+</section>
+
+<section>
+  <h2><span class="num">12</span>Security Architecture</h2>
+  <h3>Authentication Pipeline (5 ชั้น)</h3>
+  <ol style="padding-left: 20px;">
+    <li>CloudFront + WAF (OWASP Top 10)</li>
+    <li>Elastic Load Balancing (Health Check)</li>
+    <li>Cognito JWT Validation</li>
+    <li>Custom Authorizer (Participant Scope + ACTIVE only)</li>
+    <li>TLS 1.2+ ทุก Connection</li>
+  </ol>
+  <h3>Key Management & Canonical Hashing</h3>
+  <ul>
+    <li>Private Key สร้างและเก็บฝั่ง Client เท่านั้น</li>
+    <li>Lifecycle: ACTIVE → DEPRECATED → REVOKED + Overlap Window</li>
+    <li>Canonicalize ด้วย JCS (RFC 8785) ก่อน Hash → SHA-256</li>
+    <li>Verify ย้อนหลัง: POST /v1/messages/{id}/verify-hash</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">13</span>Admin Console & Participant Dashboard</h2>
+  <h3>Admin Console (Back-office)</h3>
+  <p>
+    <span class="tag tag-blue">KYC/KYB Workflow</span>
+    <span class="tag tag-blue">User Management</span>
+    <span class="tag tag-blue">Transaction Monitor</span>
+    <span class="tag tag-blue">Audit Log</span>
+    <span class="tag tag-blue">System Dashboard</span>
+    <span class="tag tag-blue">Schema Management</span>
+    <span class="tag tag-blue">Analytics (Lv.2)</span>
+    <span class="tag tag-blue">Dispute Resolution (Lv.3)</span>
+  </p>
+  <h3>Participant Dashboard</h3>
+  <p>
+    <span class="tag tag-green">Transaction Tracking</span>
+    <span class="tag tag-green">Key Management</span>
+    <span class="tag tag-green">Partner Pairing</span>
+    <span class="tag tag-green">Product Catalog</span>
+    <span class="tag tag-green">Notification Preferences</span>
+    <span class="tag tag-green">Document Registry</span>
+    <span class="tag tag-green">Profile</span>
+  </p>
+</section>
+
+<section>
+  <h2><span class="num">14</span>Mock ERP & SDK Support</h2>
+  <h3>Mock ERP System</h3>
+  <ul>
+    <li>2 Instance: Seller (3001) + Buyer (3002) ใช้ TLX SDK โดยตรง</li>
+    <li>Web UI: Inbox, Outbox, Send, Scenarios, Validate</li>
+    <li>Auto-Acknowledge: QT→Confirm, PO→SO, Invoice→Receipt, DO→Complete</li>
+    <li>4 Predefined Scenarios + Docker Compose พร้อมใช้งาน</li>
+  </ul>
+  <h3>SDK Support</h3>
+  <table>
+    <tr><th>ภาษา</th><th>Package</th><th>วิธีติดตั้ง</th></tr>
+    <tr><td>Rust</td><td>tlx-sdk</td><td>Cargo dependency</td></tr>
+    <tr><td>Node.js</td><td>tlx-sdk (napi-rs)</td><td>npm install</td></tr>
+    <tr><td>Python</td><td>tlx-sdk (PyO3)</td><td>pip install</td></tr>
+    <tr><td>Any</td><td>tlx-sdk-api (REST)</td><td>Docker / HTTP</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2><span class="num">15</span>Performance & DevOps</h2>
+  <h3>Performance Targets</h3>
+  <div class="grid">
+    <div class="card"><div class="label">Concurrent Users</div><div class="value">500–1,000</div></div>
+    <div class="card"><div class="label">p95 Read</div><div class="value">&lt; 500ms</div></div>
+    <div class="card"><div class="label">p95 Write</div><div class="value">&lt; 1,000ms</div></div>
+    <div class="card"><div class="label">Error Rate</div><div class="value">&lt; 0.1%</div></div>
+    <div class="card"><div class="label">Cache Hit</div><div class="value">&gt; 80%</div></div>
+  </div>
+  <h3>Caching Strategy (Redis)</h3>
+  <ul>
+    <li>Participants: 5 min &nbsp; Public Keys: 15 min &nbsp; Dashboard Stats: 1 min &nbsp; Schema: 15 min</li>
+    <li>Circuit Breaker: 5 failures → OPEN, 30s → HALF_OPEN</li>
+  </ul>
+  <h3>CI/CD Pipeline</h3>
+  <ul>
+    <li>AWS CodeBuild + CodePipeline + CloudFormation (IaC)</li>
+    <li>SAST (pre-merge), DAST (API endpoints)</li>
+    <li>Security Hub + CloudTrail + X-Ray (Distributed Tracing)</li>
+  </ul>
+</section>
+
+<footer>
+  <p><strong>TLX Platform Overview</strong> — สรุปจาก TLX-Platform-Overview.md</p>
+  <p>เอกสารภายใน · ภายใต้การกำกับดูแลของ สพธอ. (ETDA)</p>
+</footer>
+
+</div>
+</body>
+</html>
