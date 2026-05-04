@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TLX Platform — ภาพรวมความคืบหน้าของโครงการ</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Sukhumvit Set", "Helvetica Neue", Arial, sans-serif;
+    background: #f5f7fb;
+    color: #1f2937;
+    line-height: 1.6;
+    padding: 24px;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+    color: white;
+    padding: 32px 36px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 30px rgba(30, 58, 138, 0.2);
+  }
+  header h1 { font-size: 28px; margin-bottom: 6px; font-weight: 700; }
+  header p { opacity: 0.9; font-size: 15px; }
+  .last-updated { margin-top: 14px; font-size: 13px; opacity: 0.75; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .summary-card {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border-left: 5px solid #6b7280;
+  }
+  .summary-card.done { border-left-color: #10b981; }
+  .summary-card.progress { border-left-color: #f59e0b; }
+  .summary-card.todo { border-left-color: #6366f1; }
+  .summary-card.total { border-left-color: #1e3a8a; }
+  .summary-card .label {
+    font-size: 13px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .summary-card .value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.1;
+  }
+  .summary-card .sub {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+
+  .progress-overall {
+    background: white;
+    padding: 24px 28px;
+    border-radius: 12px;
+    margin-bottom: 28px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .progress-overall h3 { font-size: 16px; margin-bottom: 12px; color: #374151; }
+  .progress-bar {
+    height: 28px;
+    background: #e5e7eb;
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+  }
+  .progress-segment {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    transition: width 0.4s ease;
+  }
+  .progress-segment.done { background: #10b981; }
+  .progress-segment.progress { background: #f59e0b; }
+  .progress-segment.todo { background: #6366f1; }
+  .progress-legend {
+    display: flex;
+    gap: 18px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: #6b7280;
+  }
+  .legend-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+    margin: 28px 0 16px;
+    padding-left: 12px;
+    border-left: 4px solid #1e3a8a;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .feature-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px 22px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border-top: 4px solid #6b7280;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+  }
+  .feature-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  }
+  .feature-card.done { border-top-color: #10b981; }
+  .feature-card.progress { border-top-color: #f59e0b; }
+  .feature-card.todo { border-top-color: #6366f1; }
+
+  .feature-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .feature-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    flex: 1;
+  }
+  .status-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .status-badge.done { background: #d1fae5; color: #065f46; }
+  .status-badge.progress { background: #fef3c7; color: #92400e; }
+  .status-badge.todo { background: #e0e7ff; color: #3730a3; }
+
+  .feature-desc {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 14px;
+    min-height: 38px;
+  }
+  .feature-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #4b5563;
+    padding-top: 12px;
+    border-top: 1px solid #f3f4f6;
+  }
+  .feature-stats span strong {
+    color: #111827;
+    font-weight: 700;
+  }
+
+  .feature-progress {
+    height: 6px;
+    background: #f3f4f6;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .feature-progress-fill {
+    height: 100%;
+    transition: width 0.4s ease;
+  }
+  .feature-card.done .feature-progress-fill { background: #10b981; width: 100%; }
+  .feature-card.progress .feature-progress-fill { background: #f59e0b; }
+  .feature-card.todo .feature-progress-fill { background: #6366f1; width: 0%; }
+
+  .details-section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px 28px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 24px;
+  }
+  details {
+    border-bottom: 1px solid #f3f4f6;
+    padding: 14px 0;
+  }
+  details:last-child { border-bottom: none; }
+  details summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+    list-style: none;
+  }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::before {
+    content: "▶";
+    font-size: 10px;
+    color: #6b7280;
+    transition: transform 0.2s;
+  }
+  details[open] summary::before { transform: rotate(90deg); }
+  details summary .badge {
+    margin-left: auto;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+  }
+  .badge.done { background: #d1fae5; color: #065f46; }
+  .badge.todo { background: #e0e7ff; color: #3730a3; }
+
+  .task-list {
+    list-style: none;
+    margin-top: 12px;
+    padding-left: 24px;
+  }
+  .task-list li {
+    padding: 6px 0;
+    font-size: 14px;
+    color: #4b5563;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .task-list li::before {
+    content: "•";
+    color: #9ca3af;
+    flex-shrink: 0;
+  }
+  .task-list li.done {
+    color: #065f46;
+  }
+  .task-list li.done::before { content: "✓"; color: #10b981; font-weight: bold; }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    color: #9ca3af;
+    font-size: 13px;
+    margin-top: 30px;
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 14px; }
+    header { padding: 22px; }
+    header h1 { font-size: 22px; }
+    .features-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>TLX Platform — ภาพรวมความคืบหน้าของโครงการ</h1>
+    <p>สรุปสถานะการพัฒนาทุก Feature โดยอัตโนมัติจาก Task.md ทั้งหมดในโครงการ</p>
+    <div class="last-updated">อัปเดตล่าสุด: 4 พฤษภาคม 2569 (2026)</div>
+  </header>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <div class="summary-card total">
+      <div class="label">Feature ทั้งหมด</div>
+      <div class="value">16</div>
+      <div class="sub">โมดูลในระบบ TLX Platform</div>
+    </div>
+    <div class="summary-card done">
+      <div class="label">ทำเสร็จแล้ว</div>
+      <div class="value">14</div>
+      <div class="sub">87.5% ของทั้งหมด</div>
+    </div>
+    <div class="summary-card progress">
+      <div class="label">กำลังดำเนินการ</div>
+      <div class="value">0</div>
+      <div class="sub">ยังไม่มี Feature ที่กำลังทำ</div>
+    </div>
+    <div class="summary-card todo">
+      <div class="label">ยังไม่เริ่ม</div>
+      <div class="value">2</div>
+      <div class="sub">12.5% รอเริ่มดำเนินการ</div>
+    </div>
+  </div>
+
+  <!-- Overall Progress Bar -->
+  <div class="progress-overall">
+    <h3>ความคืบหน้าโดยรวม</h3>
+    <div class="progress-bar">
+      <div class="progress-segment done" style="width: 87.5%;">87.5%</div>
+      <div class="progress-segment progress" style="width: 0%;"></div>
+      <div class="progress-segment todo" style="width: 12.5%;">12.5%</div>
+    </div>
+    <div class="progress-legend">
+      <span><span class="legend-dot" style="background:#10b981;"></span>เสร็จแล้ว (14 features)</span>
+      <span><span class="legend-dot" style="background:#f59e0b;"></span>กำลังดำเนินการ (0 features)</span>
+      <span><span class="legend-dot" style="background:#6366f1;"></span>ยังไม่เริ่ม (2 features)</span>
+    </div>
+  </div>
+
+  <!-- Done Features -->
+  <h2 class="section-title">✅ Feature ที่ทำเสร็จแล้ว (14)</h2>
+  <div class="features-grid">
+
+    <div class="feature-card done">
+      <div class="feature-header">
+        <div class="feature-name">Pull Mode + Pull Inbox</div>
+        <span class="status-badge done">เสร็จแล้ว</span>
+      </div>
+      <div class="feature-desc">ระบบรับข้อความแบบ Pull Mode พร้อม Pull Inbox สำหรับรองรับ Push/Pull/Both และ Email Notification</div>
+      <div class="feature-stats">
+        <span><strong>11/11</strong> งานหลัก</span>
+        <span>100% เสร็จสมบูรณ์</span>
+      </div>
+      <div class="feature-progress"><div class="feature-progress-fill"></div></div>
+    </div>
+
+    <div class="feature-card done">
+      <div class="feature-header">
+        <div class="feature-name">KYC/KYB Approval Workflow</div>
+        <span class="status-badge done">เสร็จแล้ว</span>
+      </div>
+      <div class="feature-desc">กระบวนการตรวจสอบและอนุมัติผู้เข้าใช้งาน (KYC/KYB) พร้อมการสร้าง Cognito User และส่งอีเมลเชิญผ่าน SES</div>
+      <div class="feature-stats">
+        <span><strong>11/11</strong> งานหลัก</span>
+        <span>100% เสร็จสมบูรณ์</span>
+      </div>
+      <div class="feature-progress"><div class="feature-progress-fill"></div></div>
+    </div>
+
+    <div class="feature-card done">
+      <div class="feature-header">
+        <div class="feature-name">RBAC 4 Roles</div>
+        <span class="status-badge done">เสร็จแล้ว</span>
+      </div>
+      <div class="feature-desc">ขยายระบบ RBAC จาก 2 บทบาทเป็น 4 บทบาท (TlxAdmin / ParticipantAdmin / ParticipantUser / SupportStaff) พร้อม Permission Matrix</div>
+      <div class="feature-stats">
+        <span><strong>13/13</strong> งานหลัก</span>
+        <span>100% เสร็จสมบูรณ์</span>
+      </div>
+      <div class="feature-progress"><div class="feature-progress-fill"></div></div>
+    </div>
+
+    <div class="feature-card done">
+      <div class="feature-header">
+        <div class="feature-name">Key Rotation Overlap Window</div>
+        <span class="status-badge done">เสร็จแล้ว</span>
+      </div>
+      <div class="feature-desc">เพิ่มกลไกหมุนเวียนกุญแจแบบ 3-state lifecycle (ACTIVE → DEPRECATED → REVOKED) รองรับช่วงเวลา Overlap</div>
+      <div class="feature-stats">
+        <span><strong>11/11</strong> งานหลัก</span>
+        <span>100% เสร็จสมบูรณ์</span>
+      </div>
+      <div class="feature-progress"><div class="feature-progress-fill"></div></div>
+    </div>
+
+    <div class="feature-card done">
+      <div class="feature-header">
+        <div class="feature-name">JSON Canonicalization (RFC 8785)</div>
+        <span class="status-badge done">เสร็จแล้ว</span>
+      </div>
+      <div class="feature-desc">สร้าง crate `tlx-canon` รองรับการ canonicalize JSON ตาม RFC 8785 (JCS-SHA256) สำหรับ Hash Verification</div>
+      <div class="feature-stats">
+        <span><strong>12/12</strong> งานหลัก</span>
+        <span>100% เสร็จสมบูรณ์</span>
+      </div>
+      <div class="feature-progress"><div class="feature-progress-fill"></div></div>
+    </div>
+
+    <div class="feature-card done">
+      <div class="feature-header">
+        <div class="feature-name">Portal UI</div>
+        <span class="status-badge done">เสร็จแล้ว</span>
+      </div>
+      <div class="feature-desc">ปรับปรุง Portal จาก fetch/useState เป็น TanStack Query v5 พร้อม Zod validation, i18n, ARIA Accessibility</div>
+      <div class="feature-stats">
+        <span><strong>13/13</strong> งานหลัก</span>
+        <span>100% เสร็จสมบูรณ์</span>
+      </div>
+      <div class="feature-progress"><div class="feature-progress-fill"></div></div>
+    </div>
+
+    <div class="feature-card done">
+      <div class="feature-header">
+        <div class="feature-name">Product Catalog Management + Search</div>
+        <span class="status-badge done">เสร็จแล้ว</span>
+      </div>
+      <div class="feature-desc">ระบบจัดการสินค้า รองรับการค้นหา Full-Text, Bulk Import, การอัปโหลดรูปภาพและ Spec Sheet ผ่าน S3</div>
+      <div class="feature-stats">
+        <span><strong>13/13</strong> งานหลัก</span>
+        <span>100% เสร็จสมบูรณ์</span>
+      </div>
+      <div class="feature-progress"><div class="feature-progress-fill"></div></div>
+    </div>
+
+    <div class="feature-card done">
+      <div class="feature-header">
+        <div class="feature-name">Partner Pairing Flow</div>
+        <span class="status-badge done">เสร็จแล้ว</span>
+      </div>
+      <div class="feature-desc">ระบบจับคู่คู่ค้าแบบ Self-Service พร้อม Verification Code ผ่าน Email และ Bcrypt Hashing</div>
+      <div class="feature-stats">
+        <span><strong>12/12</strong> งานหลัก</span>
+        <span>100% เสร็จสมบูรณ์</span>
+      </div>
+      <div class="feature-progress"><div class="feature-progress-fill"></div></div>
+    </div>
+
+    <div class="feature-card done">
+      <div class="feature-header">
+        <div class="feature-name">Document Registry + Routing</div>
+        <span class="status-badge done">เสร็จแล้ว</span>
+      </div>
+      <div class="feature-desc">ระบบลงทะเบียน Document Type ต่อ Participant พร้อม Endpoint URL และ Redis Caching สำหรับ Routing Lookup</div>
+      <div class="feature-stats">
+        <span><strong>13/13</strong> งานหลัก</span>
+        <span>100% เสร็จสมบูรณ์</span>
+      </div>
+      <div class="feature-progress"><div class="feature-progress-fill"></div></div>
+    </div>
+
+    <div class="feature-card done">
+      <div class="feature-header">
+        <div class="feature-name">Notification Preferences</div>
+        <span class="status-badge done">เสร็จแล้ว</span>
+      </div>
+      <div class="feature-desc">ระบบจัดการ Notification Preference ต่อ Participant พร้อม History Tracking และส่งอีเมลผ่าน SES (4 Event Types)</div>
+      <div class="feature-stats">
+        <span><strong>13/13</strong> งานหลัก</span>
+        <span>100% เสร็จสมบูรณ์</span>
+      </div>
+      <div class="feature-progress"><div class="feature-progress-fill"></div></div>
+    </div>
+
+    <div class="feature-card done">
+      <div class="feature-header">
+        <div class="feature-name">Schema Versioning</div>
+        <span class="status-badge done">เสร็จแล้ว</span>
+      </div>
+      <div class="feature-desc">ระบบจัดการ Schema แบบ Dynamic ต่อ Document Type/Version แทนที่ Validation Rule แบบ Hardcoded พร้อม Redis Caching</div>
+      <div class="feature-stats">
+        <span><strong>10/10</strong> งานหลัก</span>
+        <span>100% เสร็จสมบูรณ์</span>
+      </div>
+      <div class="feature-progress"><div class="feature-progress-fill"></div></div>
+    </div>
+
+    <div class="feature-card done">
+      <div class="feature-header">
+        <div class="feature-name">Trust Services Level 2-3 Analytics</div>
+        <span class="status-badge done">เสร็จแล้ว</span>
+      </div>
+      <div class="feature-desc">เพิ่ม Trust Services Level 2 (Analytical Summary) และ Level 3 (Restricted Case Data) พร้อม K-Anonymity และ Audit Logging</div>
+      <div class="feature-stats">
+        <span><strong>13/13</strong> งานหลัก</span>
+        <span>100% เสร็จสมบูรณ์</span>
+      </div>
+      <div class="feature-progress"><div class="feature-progress-fill"></div></div>
+    </div>
+
+    <div class="feature-card done">
+      <div class="feature-header">
+        <div class="feature-name">Node.js / Python SDK Bindings</div>
+        <span class="status-badge done">เสร็จแล้ว</span>
+      </div>
+      <div class="feature-desc">สร้าง Native Bindings สำหรับ Node.js (NAPI) และ Python (PyO3 + Maturin) พร้อม TypeScript Definitions และ CI Pipeline</div>
+      <div class="feature-stats">
+        <span><strong>13/13</strong> งานหลัก</span>
+        <span>100% เสร็จสมบูรณ์</span>
+      </div>
+      <div class="feature-progress"><div class="feature-progress-fill"></div></div>
+    </div>
+
+    <div class="feature-card done">
+      <div class="feature-header">
+        <div class="feature-name">Performance + Redis Caching</div>
+        <span class="status-badge done">เสร็จแล้ว</span>
+      </div>
+      <div class="feature-desc">เพิ่ม Cache Invalidation, Connection Pool Optimization, Database Index, CloudWatch Metrics และ X-Ray Tracing</div>
+      <div class="feature-stats">
+        <span><strong>12/12</strong> งานหลัก</span>
+        <span>100% เสร็จสมบูรณ์</span>
+      </div>
+      <div class="feature-progress"><div class="feature-progress-fill"></div></div>
+    </div>
+
+  </div>
+
+  <!-- In Progress Features -->
+  <h2 class="section-title">🔄 Feature ที่กำลังดำเนินการ (0)</h2>
+  <div class="features-grid">
+    <div class="feature-card progress" style="opacity: 0.7;">
+      <div class="feature-header">
+        <div class="feature-name">— ยังไม่มี Feature ที่กำลังดำเนินการ —</div>
+      </div>
+      <div class="feature-desc">ขณะนี้ทีมยังไม่ได้เริ่มงานในกลุ่มที่อยู่ระหว่างพัฒนา หาก Feature ใดเริ่มงานแล้วจะถูกย้ายมาแสดงในส่วนนี้โดยอัตโนมัติ</div>
+    </div>
+  </div>
+
+  <!-- Not Started Features -->
+  <h2 class="section-title">⏳ Feature ที่ยังไม่เริ่ม (2)</h2>
+  <div class="features-grid">
+
+    <div class="feature-card todo">
+      <div class="feature-header">
+        <div class="feature-name">Mock ERP System</div>
+        <span class="status-badge todo">ยังไม่เริ่ม</span>
+      </div>
+      <div class="feature-desc">สร้าง Mock ERP สำหรับทดสอบครบทั้ง 12 ETDA document types พร้อม Web UI และรองรับ Scenario Runner</div>
+      <div class="feature-stats">
+        <span><strong>0/12</strong> งานหลัก</span>
+        <span>0%</span>
+      </div>
+      <div class="feature-progress"><div class="feature-progress-fill"></div></div>
+    </div>
+
+    <div class="feature-card todo">
+      <div class="feature-header">
+        <div class="feature-name">Account Infra Landing Zone</div>
+        <span class="status-badge todo">ยังไม่เริ่ม</span>
+      </div>
+      <div class="feature-desc">CloudFormation 2-Account AWS Landing Zone (Inspection VPC, Network Firewall, TGW, VPN, Identity Center, GuardDuty)</div>
+      <div class="feature-stats">
+        <span><strong>0/13</strong> งานหลัก</span>
+        <span>0%</span>
+      </div>
+      <div class="feature-progress"><div class="feature-progress-fill"></div></div>
+    </div>
+
+  </div>
+
+  <!-- Detailed Task Breakdown (Collapsible) -->
+  <h2 class="section-title">📋 รายละเอียด Task ของแต่ละ Feature</h2>
+  <div class="details-section">
+
+    <details>
+      <summary>✅ Pull Mode + Pull Inbox <span class="badge done">11/11</span></summary>
+      <ul class="task-list">
+        <li class="done">Database migration และ core enums (IntegrationMode, InboxItemStatus)</li>
+        <li class="done">อัปเดต Participant Models และ Configuration</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">อัปเดต Participant Routes สำหรับ Integration Mode</li>
+        <li class="done">Implement Inbox API Routes (list/get/delete)</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">Implement Message Routing Changes (Push/Pull/Both)</li>
+        <li class="done">Implement Notification Service และ TTL Cleanup</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">CloudFormation และ SDK InboxPoller</li>
+        <li class="done">Final Checkpoint — ตรวจสอบ tests ผ่าน</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>✅ KYC/KYB Approval Workflow <span class="badge done">11/11</span></summary>
+      <ul class="task-list">
+        <li class="done">Database migration และ Registration Models</li>
+        <li class="done">Configuration และ AppState changes</li>
+        <li class="done">Checkpoint — ตรวจสอบการ compile</li>
+        <li class="done">Implement Cognito, Secrets, Email Services</li>
+        <li class="done">Implement Approval Service (Transactional Provisioning)</li>
+        <li class="done">Implement Registration Route Handlers</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">Implement Suspend/Reactivate Endpoints + Status Enforcement</li>
+        <li class="done">Route Registration และ Wiring</li>
+        <li class="done">CloudFormation — SES Invitation Template</li>
+        <li class="done">Final Checkpoint — ตรวจสอบทั้งระบบ</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>✅ RBAC 4 Roles <span class="badge done">13/13</span></summary>
+      <ul class="task-list">
+        <li class="done">ขยาย Role Enum และอัปเดต User Model</li>
+        <li class="done">Database Migration สำหรับ 4-Role Schema</li>
+        <li class="done">อัปเดต JWT Claims และ Cognito Role Resolution</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">Refactor RBAC Middleware เป็น Permission Matrix</li>
+        <li class="done">Enhance Scope Auth Middleware</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">Implement Org User Management Routes</li>
+        <li class="done">Update Existing User Routes และ Auth Service</li>
+        <li class="done">Wire Routes เข้า Main Router</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">อัปเดต Cognito CloudFormation Template (4 Groups)</li>
+        <li class="done">Final Checkpoint — ตรวจสอบ tests ผ่าน</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>✅ Key Rotation Overlap Window <span class="badge done">11/11</span></summary>
+      <ul class="task-list">
+        <li class="done">Database Migration สำหรับ Key Rotation Overlap</li>
+        <li class="done">Key Lifecycle Validator Module (3-state machine)</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">อัปเดต Models สำหรับ Key Rotation</li>
+        <li class="done">Implement Overlap Rotation Endpoint</li>
+        <li class="done">Implement Drain Status Endpoint</li>
+        <li class="done">Implement Complete Rotation Endpoint</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">Enhance Existing Handlers (revoke, list, get, register)</li>
+        <li class="done">Enhance Message Handling สำหรับ Encryption Key Tracking</li>
+        <li class="done">Final Checkpoint — ตรวจสอบ tests ผ่าน</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>✅ JSON Canonicalization (RFC 8785) <span class="badge done">12/12</span></summary>
+      <ul class="task-list">
+        <li class="done">สร้าง `tlx-canon` workspace crate พร้อม core canonicalization</li>
+        <li class="done">Checkpoint — ตรวจสอบ tlx-canon compile</li>
+        <li class="done">อัปเดต SDK EtdaMessage Model พร้อม hash_algorithm field</li>
+        <li class="done">อัปเดต SDK MessageBuilder ใช้ Canonical Hashing</li>
+        <li class="done">อัปเดต SDK MessageValidator สำหรับ Dual-Mode Hash Verification</li>
+        <li class="done">Implement VerificationRecord และ create_verification_record</li>
+        <li class="done">Checkpoint — ตรวจสอบ SDK compile</li>
+        <li class="done">Platform API — Canonical Hash on Message Ingestion</li>
+        <li class="done">Platform API — Hash Verification Endpoint</li>
+        <li class="done">Checkpoint — ตรวจสอบ Platform API compile</li>
+        <li class="done">Audit Evidence Migration สำหรับ Existing Records</li>
+        <li class="done">Final Checkpoint — ตรวจสอบทั้ง Workspace</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>✅ Portal UI <span class="badge done">13/13</span></summary>
+      <ul class="task-list">
+        <li class="done">Set up Foundational Providers (QueryProvider, ToastProvider, useDebounce)</li>
+        <li class="done">Create Shared UI Components (FilterPanel, StatusBadge, ConfirmDialog, MobileNav, useCsvExport)</li>
+        <li class="done">Extend Data Models และ i18n Translations</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">Implement TanStack Query Hooks สำหรับทุก Pages</li>
+        <li class="done">Implement Admin Pages (Dashboard, Participants, Users, Messages, Audit Logs, Matchings)</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">Implement Vendor Pages (Transactions, Keys, Profile)</li>
+        <li class="done">Accessibility และ Responsive Polish (WCAG 2.1 AA)</li>
+        <li class="done">Zod Validation Property Tests และ Form Accessibility</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">E2E Tests ด้วย Playwright</li>
+        <li class="done">Final Checkpoint — ตรวจสอบ tests ผ่าน</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>✅ Product Catalog Management + Search <span class="badge done">13/13</span></summary>
+      <ul class="task-list">
+        <li class="done">Database Migration และ Core Models (ProductStatus enum)</li>
+        <li class="done">Product Validation Functions (GTIN, UNSPSC, HS Code, Currency)</li>
+        <li class="done">Configuration และ Service Layer</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">Product CRUD Route Handlers</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">Search Endpoint (Full-Text + Faceted Filters)</li>
+        <li class="done">Bulk Import Endpoint</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">Product Asset Management (Images, Spec Sheets, S3 Pre-signed URLs)</li>
+        <li class="done">Portal Endpoints (Admin/Vendor)</li>
+        <li class="done">CloudFormation — Product Assets S3 Bucket</li>
+        <li class="done">Final Checkpoint — ตรวจสอบ tests ผ่าน</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>✅ Partner Pairing Flow <span class="badge done">12/12</span></summary>
+      <ul class="task-list">
+        <li class="done">Database Migrations และ Core Models (PairingStatus)</li>
+        <li class="done">Validation Functions</li>
+        <li class="done">Configuration และ Service Layer (Pairing + Notification)</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">Partner Search และ Pairing Request Route Handlers</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">Verification Code Logic และ Property Tests</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">Portal Endpoints</li>
+        <li class="done">Backward Compatibility สำหรับ Existing Matchings</li>
+        <li class="done">CloudFormation — SES Email Templates สำหรับ Pairing</li>
+        <li class="done">Final Checkpoint — ตรวจสอบ tests ผ่าน</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>✅ Document Registry + Routing <span class="badge done">13/13</span></summary>
+      <ul class="task-list">
+        <li class="done">Database Migrations และ Core Models (document_registrations, endpoint_url, registration models)</li>
+        <li class="done">Validation Functions (validate_endpoint_url + Property Tests 1-2)</li>
+        <li class="done">Registry Service Layer (CRUD + resolve_endpoint + Redis caching)</li>
+        <li class="done">Checkpoint — ตรวจสอบ models, validation, service compile</li>
+        <li class="done">SDK Route Handlers (CRUD + List Participant Registrations + Route Registration)</li>
+        <li class="done">Message Routing Integration (resolve_endpoint + UnprocessableEntity 422)</li>
+        <li class="done">Checkpoint — ตรวจสอบ SDK routes และ routing integration</li>
+        <li class="done">Property Tests สำหรับ Core Service Logic (Properties 3, 4, 7, 8, 9, 10, 11)</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">Portal Endpoints (Admin/Vendor + Vendor Isolation Property 12)</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่านหลัง Portal Endpoints</li>
+        <li class="done">Remaining Property Tests (Properties 5, 6, 13 — update/delete/cache invalidation)</li>
+        <li class="done">Final Checkpoint — ตรวจสอบ tests ทั้งหมดผ่าน</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>✅ Notification Preferences <span class="badge done">13/13</span></summary>
+      <ul class="task-list">
+        <li class="done">Database Migrations และ Core Models (notification_preferences + notification_history)</li>
+        <li class="done">Validation Functions (Event Type, Channel) + Property Tests</li>
+        <li class="done">Notification Service Layer (Preferences + Dispatch via SES)</li>
+        <li class="done">Checkpoint — ตรวจสอบ models, validation, service compile</li>
+        <li class="done">SDK Route Handlers (CRUD + Bulk Update + History)</li>
+        <li class="done">Default Preferences Integration ใน create_participant</li>
+        <li class="done">Checkpoint — ตรวจสอบ SDK routes และ defaults</li>
+        <li class="done">Property Tests สำหรับ Core Logic (Properties 3, 4, 6, 7, 8, 9, 11)</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">Portal Endpoints (Admin/Vendor + Vendor Isolation Properties 12, 13)</li>
+        <li class="done">SES Notification Templates (DocumentReceived, TransactionStatus, KeyExpiry, DeliveryFailure)</li>
+        <li class="done">AppState และ SES Client Integration (aws-sdk-ses)</li>
+        <li class="done">Final Checkpoint — ตรวจสอบ tests ผ่าน</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>✅ Schema Versioning <span class="badge done">10/10</span></summary>
+      <ul class="task-list">
+        <li class="done">Database Migration (010_create_schema_definitions), Models, Validation</li>
+        <li class="done">Property Tests สำหรับ Validation Functions (Properties 1, 9)</li>
+        <li class="done">Schema Service Layer (CRUD + Cache + validate_payload)</li>
+        <li class="done">Checkpoint — ตรวจสอบการ compile</li>
+        <li class="done">Portal Route Handlers (Admin CRUD)</li>
+        <li class="done">SDK Route Handlers (Read-Only — list active versions, get active schema)</li>
+        <li class="done">Message Validation Integration ใน send_message</li>
+        <li class="done">Checkpoint — ตรวจสอบ tests ผ่าน</li>
+        <li class="done">Property Tests สำหรับ Schema Service (Properties 2, 3, 4, 6, 7, 8, 10, 11, 12)</li>
+        <li class="done">Final Checkpoint — ตรวจสอบ tests ผ่าน + แก้ไข SQL dollar-quoting</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>⏳ Mock ERP System <span class="badge todo">0/12</span></summary>
+      <ul class="task-list">
+        <li>Project Scaffolding และ Configuration</li>
+        <li>Payload Templates (12 Document Types)</li>
+        <li>Document Engine (Send/Decrypt/Validate + Auto-Acknowledge)</li>
+        <li>Message Poller (Background Polling)</li>
+        <li>Scenario Runner (4 Predefined Scenarios)</li>
+        <li>Checkpoint — ตรวจสอบ Core Logic compile</li>
+        <li>REST API Routes</li>
+        <li>Startup Sequence และ Registration</li>
+        <li>Web UI (HTML/CSS/JS)</li>
+        <li>Checkpoint — ตรวจสอบ Build</li>
+        <li>Docker Integration</li>
+        <li>Final Checkpoint — ตรวจสอบ Build และ Tests</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>✅ Trust Services Level 2-3 Analytics <span class="badge done">13/13</span></summary>
+      <ul class="task-list">
+        <li class="done">สร้าง Analytics Data Models (AnalyticsDimension, Granularity + Property Tests 3, 8, 10)</li>
+        <li class="done">สร้าง Case Data Models (CreateCase, LinkTransactions, CaseTransactionDetail)</li>
+        <li class="done">Database Migration สำหรับ Cases Tables (010_create_cases.sql)</li>
+        <li class="done">Implement Analytics Service (พร้อม K-Anonymity + Property Tests 1, 2, 4, 5, 9)</li>
+        <li class="done">Implement Case Access Service (case_reference + justification validation + Property Tests 6, 7)</li>
+        <li class="done">Checkpoint — ตรวจสอบ Models และ Services compile</li>
+        <li class="done">Implement Analytics Route Handler (/portal/v1/analytics/summary)</li>
+        <li class="done">Implement Case Route Handlers (create/list/link/get transactions)</li>
+        <li class="done">Update RBAC Middleware สำหรับ Endpoints ใหม่</li>
+        <li class="done">Wire Routes เข้า Main Router</li>
+        <li class="done">Checkpoint — Full Test Suite</li>
+        <li class="done">Audit Logging Verification (analytics.query, case.create, case_data.access)</li>
+        <li class="done">Final Checkpoint — ตรวจสอบ tests ผ่าน</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>⏳ Account Infra Landing Zone <span class="badge todo">0/13</span></summary>
+      <ul class="task-list">
+        <li>Inspection VPC ใน Account Infra</li>
+        <li>AWS Network Firewall</li>
+        <li>Transit Gateway สำหรับ Cross-Account Networking</li>
+        <li>VPN Gateway สำหรับ On-Premise ERP Connectivity</li>
+        <li>Route 53 DNS Management</li>
+        <li>AWS Identity Center สำหรับ Centralized IAM</li>
+        <li>GuardDuty Multi-Account Configuration</li>
+        <li>Landing Zone Baseline Security (CloudTrail, Config)</li>
+        <li>Cross-Account IAM Roles</li>
+        <li>Firewall Monitoring และ Alarms</li>
+        <li>Workload VPC Modifications สำหรับ Transit Gateway</li>
+        <li>Root Orchestration Template สำหรับ Account Infra</li>
+        <li>Final Validation Checkpoint</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>✅ Node.js / Python SDK Bindings <span class="badge done">13/13</span></summary>
+      <ul class="task-list">
+        <li class="done">Node.js Bindings — Core Sync Functions (generateKeyPair, validateMessage, encrypt/decryptMessage)</li>
+        <li class="done">Node.js Bindings — Async TlxClient Functions (registerPublicKey, getPartnerKey, listPartnerKeys)</li>
+        <li class="done">Node.js TypeScript Definitions (index.d.ts)</li>
+        <li class="done">Node.js Platform Loader และ Package Config (linux/x64, darwin/arm64, darwin/x64)</li>
+        <li class="done">Python Bindings — Core Sync Methods (TlxSdk pyclass + custom exceptions)</li>
+        <li class="done">Python Bindings — Async TlxClient Methods (pyo3_async_runtimes::tokio)</li>
+        <li class="done">Python Type Stubs และ Package Config (PEP 561 + maturin backend)</li>
+        <li class="done">Node.js Unit Tests (Vitest + Fast-Check — Properties 1, 3)</li>
+        <li class="done">Python Unit Tests (Pytest + Hypothesis — Properties 2, 4)</li>
+        <li class="done">Node.js Documentation (README + JS/TS examples)</li>
+        <li class="done">Python Documentation (README + sync/async examples)</li>
+        <li class="done">Build Verification (napi build / maturin develop / cargo check)</li>
+        <li class="done">CI Pipeline Configuration (GitHub Actions — sdk-node.yml, sdk-python.yml + npm/PyPI publish)</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>✅ Performance + Redis Caching <span class="badge done">12/12</span></summary>
+      <ul class="task-list">
+        <li class="done">Cache Invalidation — Participant Mutations (create + dashboard stats)</li>
+        <li class="done">Cache Invalidation — Key Mutations (register/rotate/revoke)</li>
+        <li class="done">Cache Invalidation — Matching Mutations (create/delete)</li>
+        <li class="done">Cache Invalidation — Message Mutations (sync + SQS path)</li>
+        <li class="done">Connection Pool Optimization (DATABASE_POOL_MAX/MIN/TIMEOUT/LIFETIME)</li>
+        <li class="done">Database Index Migration (010_add_performance_indexes.sql)</li>
+        <li class="done">CloudWatch Metrics Module (TLX/CacheHitRate, CircuitBreakerState, DBActiveConnections)</li>
+        <li class="done">X-Ray Tracing Integration (tracing::instrument + X-Amzn-Trace-Id propagation)</li>
+        <li class="done">CloudFormation Alarm Updates (CacheHitRateLowAlarm, CircuitBreakerOpenAlarm)</li>
+        <li class="done">Load Test Enhancements (k6 — p50/p99 metrics + cache scenario)</li>
+        <li class="done">Verify Existing Integrations (cache-aside, circuit breaker, S3 offload, SNS audit)</li>
+        <li class="done">Build Verification และ Testing (cargo check/test workspace)</li>
+      </ul>
+    </details>
+
+  </div>
+
+  <footer>
+    เอกสารนี้สร้างขึ้นโดยอัตโนมัติจาก Task.md ทั้งหมดในโฟลเดอร์โครงการ TLX Platform · The Dreamcatcher
+  </footer>
+
+</div>
+</body>
+</html>
