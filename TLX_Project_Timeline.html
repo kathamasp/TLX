@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>TLX Project Timeline — Trade & Logistic Exchange Platform</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: -apple-system, "Segoe UI", "Sarabun", "Helvetica Neue", Arial, sans-serif;
+        background: #f4f6fa;
+        color: #1a2332;
+        line-height: 1.5;
+        padding: 32px;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+
+    /* ---------- Header ---------- */
+    .header {
+        background: linear-gradient(135deg, #003366 0%, #1A5276 100%);
+        color: #fff;
+        padding: 32px 40px;
+        border-radius: 14px 14px 0 0;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .badge {
+        background: rgba(255,255,255,0.15);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+    }
+    .header h1 {
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+    .header .subtitle {
+        font-size: 15px;
+        opacity: 0.85;
+        margin-bottom: 18px;
+    }
+    .header-meta {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(255,255,255,0.2);
+    }
+    .meta-item .meta-label {
+        font-size: 11px;
+        opacity: 0.7;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+    .meta-item .meta-value {
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    /* ---------- Summary card ---------- */
+    .summary {
+        background: #fff;
+        padding: 24px 40px;
+        border-left: 4px solid #1A5276;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .summary h2 {
+        font-size: 16px;
+        color: #1A5276;
+        margin-bottom: 10px;
+        font-weight: 700;
+    }
+    .summary p {
+        font-size: 14.5px;
+        color: #2c3e50;
+        line-height: 1.7;
+    }
+
+    /* ---------- Legend ---------- */
+    .legend-bar {
+        background: #fff;
+        padding: 16px 40px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 28px;
+        align-items: center;
+        border-bottom: 1px solid #e8ecf2;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+    }
+    .legend-swatch {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+    }
+    .sw-done { background: #27AE60; }
+    .sw-inprogress { background: #F39C12; }
+    .sw-notstarted { background: #BDC3C7; }
+    .sw-milestone {
+        background: #C0392B;
+        border-radius: 50%;
+        width: 14px;
+        height: 14px;
+        transform: rotate(45deg);
+        margin-left: 2px;
+    }
+
+    /* ---------- Gantt chart ---------- */
+    .gantt-wrapper {
+        background: #fff;
+        border-radius: 0 0 14px 14px;
+        padding: 24px 0 32px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        overflow-x: auto;
+    }
+    .gantt {
+        min-width: 1100px;
+        padding: 0 24px;
+    }
+
+    /* Timeline header (months) */
+    .timeline-header {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        border-bottom: 2px solid #1A5276;
+        margin-bottom: 8px;
+    }
+    .timeline-header .corner {
+        padding: 10px 12px;
+        font-weight: 700;
+        font-size: 13px;
+        color: #1A5276;
+    }
+    .month-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        position: relative;
+    }
+    .month-cell {
+        padding: 10px 8px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 13px;
+        color: #1A5276;
+        border-left: 1px solid #e8ecf2;
+    }
+
+    /* Phase group */
+    .phase-group {
+        border-bottom: 1px solid #eef1f5;
+    }
+    .phase-header {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        background: #f7f9fc;
+        align-items: center;
+    }
+    .phase-title {
+        padding: 12px 12px 12px 16px;
+        font-weight: 700;
+        font-size: 14px;
+        color: #1a2332;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .phase-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+    .phase-1 { background: #5DADE2; }
+    .phase-2 { background: #48C9B0; }
+    .phase-3 { background: #AF7AC5; }
+    .phase-4 { background: #F5B041; }
+    .phase-5 { background: #EC7063; }
+    .phase-6 { background: #58D68D; }
+
+    .phase-period {
+        font-size: 12px;
+        font-weight: 400;
+        color: #7b8794;
+        margin-left: auto;
+        padding-right: 12px;
+    }
+
+    /* Task row */
+    .task-row {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        align-items: center;
+        min-height: 38px;
+        border-top: 1px solid #f0f3f7;
+    }
+    .task-row:hover { background: #fbfcfe; }
+    .task-name {
+        padding: 6px 12px 6px 32px;
+        font-size: 13px;
+        color: #2c3e50;
+    }
+    .task-track {
+        position: relative;
+        height: 38px;
+    }
+    .task-bar {
+        position: absolute;
+        top: 10px;
+        height: 18px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+    }
+    .bar-done { background: linear-gradient(180deg, #2ECC71, #27AE60); }
+    .bar-inprogress {
+        background: linear-gradient(180deg, #F5B041, #F39C12);
+        background-image:
+            linear-gradient(180deg, #F5B041, #F39C12),
+            repeating-linear-gradient(45deg, rgba(255,255,255,0.18) 0 6px, transparent 6px 12px);
+        background-blend-mode: overlay;
+    }
+    .bar-notstarted { background: linear-gradient(180deg, #CAD3DA, #A6B0B8); color: #34495E; }
+    .progress-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.25);
+        border-right: 2px solid rgba(255,255,255,0.85);
+    }
+
+    /* Milestone diamond */
+    .milestone-row {
+        background: #fff8f5;
+    }
+    .milestone-marker {
+        position: absolute;
+        top: 8px;
+        width: 22px;
+        height: 22px;
+        background: #C0392B;
+        transform: translateX(-11px) rotate(45deg);
+        box-shadow: 0 2px 6px rgba(192,57,43,0.35);
+    }
+    .milestone-label {
+        position: absolute;
+        top: 7px;
+        left: 18px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #C0392B;
+        white-space: nowrap;
+    }
+
+    /* Today line */
+    .today-line {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #E74C3C;
+        z-index: 5;
+        pointer-events: none;
+    }
+    .today-label {
+        position: absolute;
+        top: -22px;
+        left: -28px;
+        background: #E74C3C;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 3px;
+        white-space: nowrap;
+    }
+
+    /* Phase track wrapper (relative for absolute bars) */
+    .phase-track-area {
+        position: relative;
+    }
+    .grid-bg {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        pointer-events: none;
+    }
+    .grid-bg > div {
+        border-left: 1px solid #f0f3f7;
+    }
+
+    /* Status pill */
+    .status-pill {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin-left: 6px;
+        vertical-align: middle;
+    }
+    .pill-done { background: #d6f5e3; color: #1E8449; }
+    .pill-inprogress { background: #fdecc8; color: #B9770E; }
+    .pill-notstarted { background: #e8ecf2; color: #5D6D7E; }
+
+    /* Footer summary cards */
+    .footer-cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 24px;
+    }
+    .stat-card {
+        background: #fff;
+        padding: 18px 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        border-top: 3px solid #1A5276;
+    }
+    .stat-card .label {
+        font-size: 11px;
+        text-transform: uppercase;
+        color: #7b8794;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+    .stat-card .value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1a2332;
+    }
+    .stat-card .sub {
+        font-size: 12px;
+        color: #5D6D7E;
+        margin-top: 4px;
+    }
+
+    .doc-footer {
+        text-align: center;
+        margin-top: 24px;
+        font-size: 12px;
+        color: #7b8794;
+    }
+
+    @media print {
+        body { background: #fff; padding: 0; }
+        .gantt-wrapper { box-shadow: none; }
+    }
+</style>
+</head>
+<body>
+<div class="container">
+
+    <!-- =================== HEADER =================== -->
+    <header class="header">
+        <div class="header-top">
+            <span class="badge">PROJECT CHARTER · V00.2</span>
+            <span class="badge">CONFIDENTIAL</span>
+        </div>
+        <h1>โครงการศึกษาระบบต้นแบบ แพลตฟอร์ม TLX</h1>
+        <div class="subtitle">Trade &amp; Logistic Exchange Platform — Prototype (Proof of Concept)</div>
+        <div class="header-meta">
+            <div class="meta-item">
+                <div class="meta-label">เจ้าของโครงการ</div>
+                <div class="meta-value">สพธอ. (ETDA)</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">ผู้รับจ้าง</div>
+                <div class="meta-value">Xcellence Corporation</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">ระยะเวลา</div>
+                <div class="meta-value">120 วัน (6 พ.ค. – 2 ก.ย. 69)</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">วงเงินรวม</div>
+                <div class="meta-value">฿1,565,941.23</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- =================== PROJECT SUMMARY =================== -->
+    <section class="summary">
+        <h2>สรุปภาพรวมโครงการ (Project Summary)</h2>
+        <p>
+            สพธอ. ว่าจ้าง Xcellence Corporation พัฒนาแพลตฟอร์มต้นแบบ <strong>TLX (Trade &amp; Logistic Exchange)</strong>
+            เพื่อพิสูจน์แนวคิด (Proof of Concept) การแลกเปลี่ยนข้อมูลทางการค้าและโลจิสติกส์แบบ
+            <strong>Zero-Knowledge</strong> ผ่าน Federated Trust Layer บน AWS Cloud — ครอบคลุมเอกสารมาตรฐาน 8 ประเภท
+            (QT, PO, OC, INV, DN, GR, Payment Confirmation/Advice) และทดสอบกับกลุ่ม Focus Group จริง
+            ระบบประกอบด้วย 3 องค์ประกอบหลัก: TLX Platform, Mock ERP (Buyer/Seller) และ TLX SDK/Library
+            ดำเนินงานแบบ Hybrid (Waterfall + Agile + DevSecOps) ในระยะเวลา 120 วัน
+            แบ่งเป็น 6 Phase และส่งมอบ 2 งวด (45% / 55%) เพื่อปูทางสู่ระบบ Production จริงในปี พ.ศ. 2570
+        </p>
+    </section>
+
+    <!-- =================== LEGEND =================== -->
+    <div class="legend-bar">
+        <strong style="font-size:13px;color:#1A5276;">สถานะ:</strong>
+        <div class="legend-item"><div class="legend-swatch sw-done"></div> Done (เสร็จสิ้น)</div>
+        <div class="legend-item"><div class="legend-swatch sw-inprogress"></div> In Progress (กำลังดำเนินการ)</div>
+        <div class="legend-item"><div class="legend-swatch sw-notstarted"></div> Not Started (ยังไม่เริ่ม)</div>
+        <div class="legend-item"><div class="legend-swatch sw-milestone"></div> Milestone (จุดส่งมอบ)</div>
+        <div class="legend-item" style="margin-left:auto;">
+            <div style="width:2px;height:18px;background:#E74C3C;"></div>
+            <span style="color:#E74C3C;font-weight:600;">วันนี้: 13 พ.ค. 2569</span>
+        </div>
+    </div>
+
+    <!-- =================== GANTT CHART =================== -->
+    <div class="gantt-wrapper">
+    <div class="gantt">
+
+        <!-- Timeline header months -->
+        <div class="timeline-header">
+            <div class="corner">Phase / Task</div>
+            <div class="month-grid">
+                <div class="month-cell">พ.ค. 69</div>
+                <div class="month-cell">มิ.ย. 69</div>
+                <div class="month-cell">ก.ค. 69</div>
+                <div class="month-cell">ส.ค. 69</div>
+                <div class="month-cell">ก.ย. 69</div>
+            </div>
+        </div>
+
+        <!-- ============= PHASE 1: Preparation ============= -->
+        <div class="phase-group">
+            <div class="phase-header">
+                <div class="phase-title">
+                    <span class="phase-dot phase-1"></span>
+                    Phase 1 · Preparation
+                </div>
+                <div class="phase-track-area">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="phase-period">วันที่ 1–7 · 6–12 พ.ค. 69</div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">Kick-off Meeting &amp; Project Charter <span class="status-pill pill-done">DONE</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-done" style="left:0%; width:5.79%;">6–12 พ.ค.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============= PHASE 2: Analysis ============= -->
+        <div class="phase-group">
+            <div class="phase-header">
+                <div class="phase-title">
+                    <span class="phase-dot phase-2"></span>
+                    Phase 2 · Analysis
+                </div>
+                <div class="phase-track-area">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="phase-period">วันที่ 8–28 · 13 พ.ค.–2 มิ.ย. 69</div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">จัดทำ Project Plan / Gantt Chart <span class="status-pill pill-inprogress">IN PROGRESS</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-inprogress" style="left:0%; width:10.74%;">
+                        6–19 พ.ค.
+                        <div class="progress-overlay" style="width:50%;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">Requirement Analysis Workshop <span class="status-pill pill-inprogress">IN PROGRESS</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-inprogress" style="left:5.79%; width:17.36%;">
+                        13 พ.ค.–2 มิ.ย.
+                        <div class="progress-overlay" style="width:5%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============= PHASE 3: Design ============= -->
+        <div class="phase-group">
+            <div class="phase-header">
+                <div class="phase-title">
+                    <span class="phase-dot phase-3"></span>
+                    Phase 3 · Design
+                </div>
+                <div class="phase-track-area">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="phase-period">วันที่ 29–50 · 20 พ.ค.–24 มิ.ย. 69</div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">ออกแบบ System Architecture &amp; API Spec <span class="status-pill pill-notstarted">NOT STARTED</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-notstarted" style="left:11.57%; width:17.36%;">20 พ.ค.–9 มิ.ย.</div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">ออกแบบ Trade Data Standards &amp; Schema <span class="status-pill pill-notstarted">NOT STARTED</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-notstarted" style="left:17.36%; width:17.36%;">27 พ.ค.–16 มิ.ย.</div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">ออกแบบ UX/UI (Wireframes / Mockups) <span class="status-pill pill-notstarted">NOT STARTED</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-notstarted" style="left:23.14%; width:17.36%;">3–23 มิ.ย.</div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">จัดทำ Test Plan <span class="status-pill pill-notstarted">NOT STARTED</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-notstarted" style="left:34.71%; width:5.79%;">17–23 มิ.ย.</div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">นำเสนอ &amp; ขออนุมัติ สพธอ. (งวดที่ 1) <span class="status-pill pill-notstarted">NOT STARTED</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-notstarted" style="left:34.71%; width:5.79%;">17–23 มิ.ย.</div>
+                </div>
+            </div>
+            <!-- Milestone 1 -->
+            <div class="task-row milestone-row">
+                <div class="task-name"><strong style="color:#C0392B;">🏁 Milestone 1 — ส่งมอบงวดที่ 1 (45%)</strong></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="milestone-marker" style="left:40.50%;"></div>
+                    <div class="milestone-label" style="left:40.50%;">24 มิ.ย. · ฿704,673.55</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============= PHASE 4: Build ============= -->
+        <div class="phase-group">
+            <div class="phase-header">
+                <div class="phase-title">
+                    <span class="phase-dot phase-4"></span>
+                    Phase 4 · Build
+                </div>
+                <div class="phase-track-area">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="phase-period">วันที่ 51–100 · 25 มิ.ย.–13 ส.ค. 69</div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">ตั้งค่า AWS Cloud Infrastructure (Landing Zone) <span class="status-pill pill-notstarted">NOT STARTED</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-notstarted" style="left:41.32%; width:11.57%;">25 มิ.ย.–8 ก.ค.</div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">พัฒนา TLX Platform (Agile Sprints) <span class="status-pill pill-notstarted">NOT STARTED</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-notstarted" style="left:46.28%; width:34.71%;">1 ก.ค.–11 ส.ค.</div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">พัฒนา Mock ERP (2 ชุด) + SDK/Library <span class="status-pill pill-notstarted">NOT STARTED</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-notstarted" style="left:46.28%; width:34.71%;">1 ก.ค.–11 ส.ค.</div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">Unit Testing &amp; Integration Testing <span class="status-pill pill-notstarted">NOT STARTED</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-notstarted" style="left:63.64%; width:23.14%;">22 ก.ค.–18 ส.ค.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============= PHASE 5: Transition ============= -->
+        <div class="phase-group">
+            <div class="phase-header">
+                <div class="phase-title">
+                    <span class="phase-dot phase-5"></span>
+                    Phase 5 · Transition
+                </div>
+                <div class="phase-track-area">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="phase-period">วันที่ 101–115 · 14–28 ส.ค. 69</div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">Security Testing (SAST / DAST / Pentest) <span class="status-pill pill-notstarted">NOT STARTED</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-notstarted" style="left:80.99%; width:11.57%;">12–25 ส.ค.</div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">User Acceptance Testing (UAT) <span class="status-pill pill-notstarted">NOT STARTED</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-notstarted" style="left:86.78%; width:11.57%;">19 ส.ค.–1 ก.ย.</div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">Focus Group (≥ 10 ท่าน) <span class="status-pill pill-notstarted">NOT STARTED</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-notstarted" style="left:92.56%; width:5.79%;">26 ส.ค.–1 ก.ย.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============= PHASE 6: Go-Live ============= -->
+        <div class="phase-group">
+            <div class="phase-header">
+                <div class="phase-title">
+                    <span class="phase-dot phase-6"></span>
+                    Phase 6 · Go-Live
+                </div>
+                <div class="phase-track-area">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="phase-period">วันที่ 116–120 · 29 ส.ค.–2 ก.ย. 69</div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">จัดทำ Final Report &amp; Technical Roadmap <span class="status-pill pill-notstarted">NOT STARTED</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-notstarted" style="left:92.56%; width:6.61%;">26 ส.ค.–2 ก.ย.</div>
+                </div>
+            </div>
+            <div class="task-row">
+                <div class="task-name">ส่งมอบงานครบถ้วน — Delivery Package <span class="status-pill pill-notstarted">NOT STARTED</span></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="task-bar bar-notstarted" style="left:97.52%; width:1.65%;">1–2 ก.ย.</div>
+                </div>
+            </div>
+            <!-- Milestone 2 -->
+            <div class="task-row milestone-row">
+                <div class="task-name"><strong style="color:#C0392B;">🏁 Milestone 2 — ส่งมอบงวดที่ 2 (55%)</strong></div>
+                <div class="task-track">
+                    <div class="grid-bg"><div></div><div></div><div></div><div></div><div></div></div>
+                    <div class="milestone-marker" style="left:99.17%;"></div>
+                    <div class="milestone-label" style="left:99.17%; transform:translateX(-160px);">2 ก.ย. · ฿861,267.68</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today indicator overlay (positioned absolutely over grid) -->
+        <!-- Today = 13 May 2026. From May 6 to Sep 2 = 120 days. May 13 = day 8. 8/121 = ~6.61% -->
+        <div style="position:relative; height:0;">
+            <div class="today-line" style="position:absolute; left:calc(280px + (100% - 280px) * 0.0661); height:0;"></div>
+        </div>
+
+    </div>
+    </div>
+
+    <!-- =================== FOOTER STAT CARDS =================== -->
+    <div class="footer-cards">
+        <div class="stat-card" style="border-top-color:#27AE60;">
+            <div class="label">Completed</div>
+            <div class="value">1 <span style="font-size:14px; font-weight:500; color:#7b8794;">/ 16 tasks</span></div>
+            <div class="sub">Phase 1: Kick-off</div>
+        </div>
+        <div class="stat-card" style="border-top-color:#F39C12;">
+            <div class="label">In Progress</div>
+            <div class="value">2 <span style="font-size:14px; font-weight:500; color:#7b8794;">/ 16 tasks</span></div>
+            <div class="sub">Phase 2: Analysis</div>
+        </div>
+        <div class="stat-card" style="border-top-color:#BDC3C7;">
+            <div class="label">Not Started</div>
+            <div class="value">13 <span style="font-size:14px; font-weight:500; color:#7b8794;">/ 16 tasks</span></div>
+            <div class="sub">Phase 3 – 6</div>
+        </div>
+        <div class="stat-card" style="border-top-color:#C0392B;">
+            <div class="label">Next Milestone</div>
+            <div class="value" style="font-size:18px;">24 มิ.ย. 69</div>
+            <div class="sub">งวดที่ 1 (45%) · ในอีก 42 วัน</div>
+        </div>
+    </div>
+
+    <div class="doc-footer">
+        เอกสารอ้างอิง: 20260510_ETDA_TLX_Project-Charter_V00.2.docx ·
+        จัดทำโดย Xcellence Corporation Co., Ltd. ·
+        วันที่แสดงผล: 13 พฤษภาคม 2569
+    </div>
+
+</div>
+</body>
+</html>
